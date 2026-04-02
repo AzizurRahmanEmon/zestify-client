@@ -73,6 +73,7 @@ const HeaderSearchForm = () => {
           value={searchInput}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
+          aria-label="Search products"
           placeholder="Search products..."
           className="w-full pl-12 pr-4 py-3 bg-transparent text-gray-700 placeholder-gray-400 focus:outline-none text-sm rounded-full"
           autoComplete="off"

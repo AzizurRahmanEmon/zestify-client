@@ -39,15 +39,24 @@ export async function getGallery(
   const qs = query.toString();
   const path = `/gallery${qs ? `?${qs}` : ""}`;
 
-  const data = await request<GalleryResponse>(path);
-  return data.data || [];
+  const data = await request<GalleryItem[] | GalleryResponse>(path);
+  if (Array.isArray(data)) {
+    return data;
+  }
+  return data?.data || [];
 }
 
 export async function getGalleryItem(id: string): Promise<GalleryItem | null> {
   try {
-    const data = await request<{ success: boolean; data: GalleryItem }>(
-      `/gallery/${encodeURIComponent(id)}`,
-    );
+    const data = await request<
+      GalleryItem | { success: boolean; data: GalleryItem }
+    >(`/gallery/${encodeURIComponent(id)}`);
+    if (!data) {
+      return null;
+    }
+    if ("_id" in data) {
+      return data;
+    }
     return data.data || null;
   } catch (e: any) {
     if (e?.message?.includes("404")) return null;

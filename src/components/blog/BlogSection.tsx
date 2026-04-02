@@ -32,12 +32,7 @@ const BlogSection = ({
         <div className="py-20 lg:py-30">
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 animate-fade-in-up">
-              <Image
-                width={14}
-                height={22}
-                src="/assets/img/fire.png"
-                alt="fire"
-              />
+              <Image width={14} height={22} src="/assets/img/fire.png" alt="" />
               <h6 className="ar-subtitle">{subtitle}</h6>
             </div>
             <div className="animate-fade-in-up animation-delay-200">
@@ -59,7 +54,7 @@ const BlogSection = ({
                       width={438}
                       height={400}
                       src={blog.img}
-                      alt="blog"
+                      alt={blog.title}
                       className="h-65 sm:h-75 xl:h-100 object-cover w-full transition-transform duration-300 ease-in-out group-hover:scale-110"
                     />
                   </div>
@@ -74,7 +69,7 @@ const BlogSection = ({
                   <p className="mt-4 font-medium text-sm sm:text-base text-pTextColor">
                     Rapidiously repurpose leading edge growth
                   </p>
-                  <a
+                  <Link
                     href={`/blog/${blog.link}`}
                     className="flex w-max items-center gap-4 mt-7"
                   >
@@ -84,7 +79,7 @@ const BlogSection = ({
                     <span className="bg-zPink w-5 h-5 inline-flex items-center justify-center text-xs text-white">
                       <i className="fa-light fa-plus"></i>
                     </span>
-                  </a>
+                  </Link>
                   <div className="absolute flex items-center h-13 bg-zPink z-10 justify-around w-[90%] left-1/2 -translate-x-1/2 -top-6.5">
                     <div className="flex text-sm sm:text-base text-white items-center gap-3">
                       <i className="fa-light fa-user"></i>

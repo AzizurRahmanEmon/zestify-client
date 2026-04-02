@@ -1,6 +1,8 @@
 "use client";
 import { Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/autoplay";
 import Image from "next/image";
 
 interface Testimonial {
@@ -46,7 +48,7 @@ const TestimonySlider = ({ items }: { items?: Testimonial[] }) => {
                   width={52}
                   height={52}
                   src={item.img}
-                  alt="user"
+                  alt={item.name}
                   className="h-full w-full rounded-full object-cover object-top"
                 />
               </div>

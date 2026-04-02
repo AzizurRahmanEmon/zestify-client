@@ -49,10 +49,13 @@ const UserAuthButton = ({
   return (
     <div className="relative">
       <button
+        type="button"
         onClick={toggleDropdown}
         className="flex items-center gap-2 group"
         aria-label="User menu"
         aria-expanded={dropdownOpen}
+        aria-haspopup="menu"
+        aria-controls="user-menu"
       >
         {/* Avatar */}
         <div className="w-9 h-9 capitalize rounded-full bg-zPink text-white flex items-center justify-center font-bold text-sm border-2 border-pink-200 group-hover:border-zPink transition-colors duration-200 overflow-hidden shrink-0">
@@ -81,9 +84,18 @@ const UserAuthButton = ({
       {dropdownOpen && (
         <>
           {/* Backdrop */}
-          <div className="fixed inset-0 z-40" onClick={toggleDropdown} />
+          <button
+            type="button"
+            aria-label="Close user menu"
+            className="fixed inset-0 z-40"
+            onClick={toggleDropdown}
+          />
 
-          <div className="absolute right-0 top-full mt-3 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
+          <div
+            id="user-menu"
+            role="menu"
+            className="absolute right-0 top-full mt-3 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50"
+          >
             {/* User info header */}
             <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
               <p className="text-sm font-semibold text-gray-900 truncate">
@@ -134,6 +146,7 @@ const UserAuthButton = ({
             {/* Logout */}
             <div className="border-t border-gray-100 py-2">
               <button
+                type="button"
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors duration-150"
               >

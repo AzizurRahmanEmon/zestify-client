@@ -31,15 +31,24 @@ export async function getServices(
   const qs = query.toString();
   const path = `/services${qs ? `?${qs}` : ""}`;
 
-  const data = await request<ServicesResponse>(path);
-  return data.data || [];
+  const data = await request<Service[] | ServicesResponse>(path);
+  if (Array.isArray(data)) {
+    return data;
+  }
+  return data?.data || [];
 }
 
 export async function getService(id: string): Promise<Service | null> {
   try {
-    const data = await request<{ success: boolean; data: Service }>(
+    const data = await request<Service | { success: boolean; data: Service }>(
       `/services/${encodeURIComponent(id)}`,
     );
+    if (!data) {
+      return null;
+    }
+    if ("_id" in data) {
+      return data;
+    }
     return data.data || null;
   } catch (e: any) {
     if (e?.message?.includes("404")) return null;

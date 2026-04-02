@@ -1,4 +1,6 @@
-import CompanySlider from "./CompanySlider";
+import dynamic from "next/dynamic";
+
+const CompanySlider = dynamic(() => import("./CompanySlider"));
 interface Partner {
   icon: string;
   width: number;
@@ -9,7 +11,11 @@ interface Props {
   title?: string;
   partners?: Partner[];
 }
-const CompanySection = ({ paddingTop, title = "Global 5K+ Happy Sponsors With us", partners }: Props) => {
+const CompanySection = ({
+  paddingTop,
+  title = "Global 5K+ Happy Sponsors With us",
+  partners,
+}: Props) => {
   return (
     <section
       style={{

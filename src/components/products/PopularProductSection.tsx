@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { Navigation } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/navigation";
 import Image from "next/image";
 import type { ProductDataType } from "@/types";
 
@@ -33,7 +35,7 @@ const PopularProductSection = ({
                   width={14}
                   height={22}
                   src="/assets/img/fire.png"
-                  alt="fire"
+                  alt=""
                 />
                 <h6 className="ar-subtitle">{subtitle}</h6>
               </div>
@@ -45,10 +47,18 @@ const PopularProductSection = ({
             </div>
 
             <div className="flex gap-2 items-center animate-fade-in-up animation-delay-200">
-              <button className="item-prev flex w-14 h-14 items-center justify-center border border-solid border-zPink text-zPink rounded-lg text-2xl bg-white hover:bg-zPink hover:text-white transition">
+              <button
+                type="button"
+                aria-label="Previous popular items"
+                className="item-prev flex w-14 h-14 items-center justify-center border border-solid border-zPink text-zPink rounded-lg text-2xl bg-white hover:bg-zPink hover:text-white transition"
+              >
                 <i className="fa-sharp fa-regular fa-arrow-left"></i>
               </button>
-              <button className="item-next flex w-14 h-14 items-center justify-center border border-solid border-zPink text-zPink rounded-lg text-2xl bg-white hover:bg-zPink hover:text-white transition">
+              <button
+                type="button"
+                aria-label="Next popular items"
+                className="item-next flex w-14 h-14 items-center justify-center border border-solid border-zPink text-zPink rounded-lg text-2xl bg-white hover:bg-zPink hover:text-white transition"
+              >
                 <i className="fa-sharp fa-regular fa-arrow-right"></i>
               </button>
             </div>

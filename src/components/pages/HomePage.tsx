@@ -47,10 +47,10 @@ const HomePage = async () => {
   ] = await Promise.all([
     getHomePage().catch(() => null),
     getFeaturedProducts().catch(() => []),
-    getProducts({ isActive: true, limit: 100 }).catch(() => []),
+    getProducts({ isActive: true, limit: 24 }).catch(() => []),
     getChefs({ isActive: true, limit: 3 }).catch(() => []),
-    getPartners({ isActive: true, limit: 50 }).catch(() => []),
-    getTestimonials({ isActive: true, limit: 50 }).catch(() => []),
+    getPartners({ isActive: true, limit: 12 }).catch(() => []),
+    getTestimonials({ isActive: true, limit: 8 }).catch(() => []),
     getHomeBlogs(),
     getSettings().catch(() => ({})),
   ]);

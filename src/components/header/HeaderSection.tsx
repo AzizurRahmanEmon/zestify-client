@@ -1,4 +1,4 @@
- "use client";
+"use client";
 import MainMenuArea from "./MainMenuArea";
 import { useCustomContext } from "@/context/context";
 import HeaderSearchForm from "@/components/form/HeaderSearchForm";
@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import UserAuthButton from "./UserAuthButton";
-import { clearCurrentCustomer, getCurrentCustomer } from "@/lib/auth";
+import { clearCustomerSession, getCurrentCustomer } from "@/lib/auth";
 
 interface Props {
   logo?: string;
@@ -16,7 +16,12 @@ interface Props {
   location?: string;
 }
 
-const HeaderSection = ({ logo = "/assets/img/logo.png", topbarText = "100% Secure delivery without contacting the courier", email = "info@example.com", location = "28 Street, New York, USA" }: Props) => {
+const HeaderSection = ({
+  logo = "/assets/img/logo.png",
+  topbarText = "100% Secure delivery without contacting the courier",
+  email = "info@example.com",
+  location = "28 Street, New York, USA",
+}: Props) => {
   const {
     openCartModal,
     openWishlistModal,
@@ -37,7 +42,7 @@ const HeaderSection = ({ logo = "/assets/img/logo.png", topbarText = "100% Secur
     setDropdownOpen((prev) => !prev);
   };
   const handleLogout = () => {
-    clearCurrentCustomer();
+    clearCustomerSession();
     setDropdownOpen(false);
     router.push("/");
   };
@@ -45,32 +50,30 @@ const HeaderSection = ({ logo = "/assets/img/logo.png", topbarText = "100% Secur
     <header>
       <div className="flex justify-between w-full shadow-sm top-0 fixed z-99">
         <div className="w-50 sm:w-65 lg:w-87.5 2xl:w-92.5 h-23.75 sm:h-28.75 lg:h-37.5 relative shrink-0 z-20 bg-white">
-          <Link href="/">
+          <Link href="/" aria-label="Go to homepage">
             <Image
               width={370}
               height={169}
               src={logo}
-              alt="logo"
+              alt="Zestify logo"
               className="absolute top-0 left-0 w-full h-24.75 sm:h-30 lg:h-40.25 2xl:h-42.25 object-cover"
             />
           </Link>
         </div>
         <div className="flex-1 -ml-px z-20">
-          <div className="h-12.5 lg:h-16.25 flex items-center bg-zPink text-white justify-end xl:justify-between gap-8 2xl:px-20 lg:px-10 px-7.5 xl:text-sm 2xl:text-base">
+          <div className="h-12.5 lg:h-16.25 flex items-center bg-[#B1133A] text-white justify-end xl:justify-between gap-8 2xl:px-20 lg:px-10 px-7.5 xl:text-sm 2xl:text-base">
             <div className="hidden xl:flex items-center gap-1">
-              <Image
-                width={14}
-                height={22}
-                src="/assets/img/fire.png"
-                alt="icon"
-              />
+              <Image width={14} height={22} src="/assets/img/fire.png" alt="" />
               <p className="pl-1 mt-1">{topbarText}</p>
             </div>
-            <a href="#" className="hidden md:block">
+            <span
+              className="hidden md:block"
+              aria-label={`Location: ${location}`}
+            >
               <i className="fa-regular fa-location-dot pr-1"></i>
               <span>{location}</span>
-            </a>
-            <a href="#" className="hidden sm:block">
+            </span>
+            <a href={`mailto:${email}`} className="hidden sm:block">
               <i className="fa-regular fa-envelope pr-1"></i>
               <span>{email}</span>
             </a>
@@ -81,9 +84,14 @@ const HeaderSection = ({ logo = "/assets/img/logo.png", topbarText = "100% Secur
               <div className="flex items-center gap-6 pr-2.5">
                 <HeaderSearchForm />
                 <div className="flex items-center gap-6">
-                  <button className="relative w-6" onClick={openWishlistModal}>
+                  <button
+                    type="button"
+                    aria-label="Open wishlist"
+                    className="relative w-6"
+                    onClick={openWishlistModal}
+                  >
                     <Image
-                      alt="icon"
+                      alt=""
                       loading="lazy"
                       width="23"
                       height="23"
@@ -93,9 +101,14 @@ const HeaderSection = ({ logo = "/assets/img/logo.png", topbarText = "100% Secur
                       {totalWishlistQuantity}
                     </span>
                   </button>
-                  <button className="relative w-6" onClick={openCartModal}>
+                  <button
+                    type="button"
+                    aria-label="Open cart"
+                    className="relative w-6"
+                    onClick={openCartModal}
+                  >
                     <Image
-                      alt="icon"
+                      alt=""
                       loading="lazy"
                       width="23"
                       height="21"
@@ -120,14 +133,15 @@ const HeaderSection = ({ logo = "/assets/img/logo.png", topbarText = "100% Secur
               </div>
             </div>
 
-            <div
+            <button
+              type="button"
+              aria-label="Toggle mobile menu"
               className="mobile-menu-icon"
               id="mobileMenuBtn"
-              role="button"
               onClick={toggleMobileMenu}
             >
               <i className="fa-regular fa-bars"></i>
-            </div>
+            </button>
           </div>
         </div>
       </div>

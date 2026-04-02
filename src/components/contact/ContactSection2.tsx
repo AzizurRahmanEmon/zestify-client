@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 type Settings = {
   phone?: string;
   email?: string;
@@ -80,15 +82,15 @@ const ContactSection2 = ({ settings }: Props) => {
               Everyone is encouraged to shop with confidence at shopping online
               bd as our strict buyer's protection policies ensure no
             </p>
-            <a
-              href="#"
+            <Link
+              href="/reservation"
               className="ar-btn mt-8 lg:mt-10 rounded-none group mx-auto"
             >
               <span className="relative z-10 transition-all duration-500 group-hover:text-black">
                 Book a table
               </span>
               <span className="absolute top-0 left-0 w-0 h-full bg-white transition-all duration-500 group-hover:w-full z-0"></span>
-            </a>
+            </Link>
             <div className="grid grid-cols-1 md:grid-cols-2 w-max mx-auto gap-6 mt-10 lg:mt-12">
               <div className="bg-white/5 backdrop-blur-md border border-white/10 shadow-lg rounded-2xl p-6 hover:border-zPink transition-all duration-300 group">
                 <div className="flex items-center gap-4">

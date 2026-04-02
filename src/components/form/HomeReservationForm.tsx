@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { API_URL } from "@/lib/api";
 import DatePicker from "./DatePicker";
@@ -585,19 +586,19 @@ const HomeReservationForm = () => {
           </div>
           <span className="text-gray-100 text-sm leading-6">
             I agree to the{" "}
-            <a
-              href="#"
+            <Link
+              href="/terms"
               className="text-zPink hover:text-zPink/80 underline transition-colors"
             >
               Terms of Service
-            </a>{" "}
+            </Link>{" "}
             and{" "}
-            <a
-              href="#"
+            <Link
+              href="/privacy"
               className="text-zPink hover:text-zPink/80 underline transition-colors"
             >
               Privacy Policy
-            </a>
+            </Link>
             <span className="text-zPink">*</span>
           </span>
         </label>

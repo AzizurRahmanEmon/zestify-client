@@ -31,6 +31,7 @@ const AboutSection = ({
   ctaRightBg,
 }: Props) => {
   const { openVideoModal } = useCustomContext();
+  const titleLines = title.split("\n");
   return (
     <section className={variant ? "" : "bg-[#F2F2F2]"}>
       <div className="ar-container relative">
@@ -45,7 +46,7 @@ const AboutSection = ({
                 width={549}
                 height={678}
                 src={image1}
-                alt="about"
+                alt="Freshly prepared featured dish"
                 className="w-4/5 mx-auto lg:mx-0 aspect-[0.81]"
               />
             </div>
@@ -54,7 +55,7 @@ const AboutSection = ({
                 width={480}
                 height={554}
                 src={image2}
-                alt="about"
+                alt="Chef plating a signature meal"
                 className="z-10 absolute left-1/4 -bottom-22.5 w-[70%] aspect-[0.866] float-animation"
               />
             </div>
@@ -67,16 +68,16 @@ const AboutSection = ({
                   width={14}
                   height={22}
                   src="/assets/img/fire.png"
-                  alt="fire"
+                  alt=""
                 />
                 <h6 className="ar-subtitle">{subtitle}</h6>
               </div>
               <div className="ar-title text-center lg:text-start pb-5 mt-3 animate-fade-in-up animation-delay-400">
                 <h3>
-                  {title.split("\n").map((line, i) => (
+                  {titleLines.map((line, i) => (
                     <span key={i}>
                       {line}
-                      {i < title.split("\n").length - 1 && <br />}
+                      {i < titleLines.length - 1 && <br />}
                     </span>
                   ))}
                 </h3>
@@ -86,12 +87,10 @@ const AboutSection = ({
             <div className="flex flex-col xl:flex-row border border-x-0 border-zPink justify-between items-center lg:items-start xl:items-center w-max xl:w-full mt-8 xl:mt-20 animate-fade-in-up animation-delay-600 py-5 mx-auto lg:mx-0">
               <ul className="flex flex-1 flex-col pb-5 xl:py-0 gap-6 mx-auto lg:mx-0 xl:pr-15 text-base xl:text-lg px-8">
                 {list.slice(0, 3).map((item, idx) => (
-                  <div key={idx}>
-                    <li className="flex gap-4 items-center">
-                      <i className="fa-solid fa-check text-zPink"></i>
-                      <h6>{item}</h6>
-                    </li>
-                  </div>
+                  <li key={idx} className="flex gap-4 items-center">
+                    <i className="fa-solid fa-check text-zPink"></i>
+                    <h6>{item}</h6>
+                  </li>
                 ))}
               </ul>
               <div className="xl:border-l xl:border-t-0 border-t border-zPink pt-5 xl:py-0 xl:pl-15 w-full xl:w-max px-8">
@@ -100,13 +99,15 @@ const AboutSection = ({
                     width={224}
                     height={176}
                     src={videoPoster}
-                    alt="video"
+                    alt="Preview of Zestify story video"
                     className="h-44 w-56 xl:mx-0 mx-auto object-cover"
                   />
                   <button
+                    type="button"
                     className="border border-white rounded-full text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center"
                     id="openAboutVideoModalButton"
                     onClick={() => openVideoModal(videoUrl)}
+                    aria-label="Play about video"
                   >
                     <i className="fa-solid fa-play"></i>
                   </button>

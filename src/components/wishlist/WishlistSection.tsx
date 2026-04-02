@@ -83,6 +83,8 @@ const WishlistSection = () => {
                       {/* Actions */}
                       <div className="col-span-3 flex justify-center">
                         <button
+                          type="button"
+                          aria-label={`Remove ${product.name} from wishlist`}
                           className="w-12 h-12 border-2 border-gray-200 rounded-full flex items-center justify-center hover:border-zPink hover:bg-zPink/10 transition-all duration-200 group"
                           onClick={() => deleteWishlistItem(product.slug)}
                         >
@@ -110,6 +112,8 @@ const WishlistSection = () => {
                 >
                   {/* Remove Button */}
                   <button
+                    type="button"
+                    aria-label={`Remove ${product.name} from wishlist`}
                     className="absolute top-4 right-4 w-10 h-10 border-2 border-gray-200 rounded-full flex items-center justify-center hover:border-zPink hover:bg-zPink/10 transition-all duration-200 group"
                     onClick={() => deleteWishlistItem(product.slug)}
                   >
@@ -157,8 +161,9 @@ const WishlistSection = () => {
 
             {/* Add to Cart Button */}
             <div className="flex justify-center lg:justify-end mt-12">
-              <a
-                role="button"
+              <button
+                type="button"
+                aria-label="Add all wishlist items to cart"
                 onClick={moveWishlistToCart}
                 className="ar-btn group gap-3 inline-flex items-center"
               >
@@ -173,7 +178,7 @@ const WishlistSection = () => {
                   className="group-hover:invert z-10"
                 />
                 <span className="absolute top-0 left-0 w-0 h-full bg-white transition-all duration-500 group-hover:w-full z-0"></span>
-              </a>
+              </button>
             </div>
           </>
         ) : (

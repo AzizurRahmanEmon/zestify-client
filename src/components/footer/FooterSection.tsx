@@ -31,26 +31,30 @@ const footerServices = [
 const footerSocials = [
   {
     id: 1,
+    name: "Facebook",
     icon: "fa-brands fa-facebook-f",
-    href: "#",
+    href: "https://facebook.com",
     color: "from-blue-500 to-blue-600",
   },
   {
     id: 2,
+    name: "Twitter",
     icon: "fa-brands fa-twitter",
-    href: "#",
+    href: "https://twitter.com",
     color: "from-sky-400 to-sky-500",
   },
   {
     id: 3,
+    name: "Vine",
     icon: "fa-brands fa-vine",
-    href: "#",
+    href: "https://vine.co",
     color: "from-green-500 to-green-600",
   },
   {
     id: 4,
+    name: "Instagram",
     icon: "fa-brands fa-instagram",
-    href: "#",
+    href: "https://instagram.com",
     color: "from-zPink/60 to-purple-600",
   },
 ];
@@ -69,16 +73,16 @@ const FooterSection = ({
 }: Props) => {
   const navItems =
     navs && navs.length
-      ? navs.map((n) => ({ text: n.text ?? "", href: n.href ?? "#" }))
+      ? navs.map((n) => ({ text: n.text ?? "", href: n.href ?? "/" }))
       : footerNavigations.map(({ text, href }) => ({ text, href }));
   const serviceItems =
     services && services.length
-      ? services.map((s) => ({ text: s.text ?? "", href: s.href ?? "#" }))
+      ? services.map((s) => ({ text: s.text ?? "", href: s.href ?? "/" }))
       : footerServices.map(({ text, href }) => ({ text, href }));
   const socialLinks = {
-    facebook: socials?.facebook || "#",
-    twitter: socials?.twitter || "#",
-    instagram: socials?.instagram || "#",
+    facebook: socials?.facebook || "https://facebook.com",
+    twitter: socials?.twitter || "https://twitter.com",
+    instagram: socials?.instagram || "https://instagram.com",
   };
   return (
     <footer className="bg-linear-to-br from-black via-gray-900 to-black bg-no-repeat bg-cover relative overflow-hidden">
@@ -176,22 +180,29 @@ const FooterSection = ({
                   <ul className="flex items-center gap-4">
                     {footerSocials.map((social) => (
                       <li key={social.id}>
-                        <a
-                          href={
-                            social.icon.includes("facebook")
-                              ? socialLinks.facebook
-                              : social.icon.includes("twitter")
-                                ? socialLinks.twitter
-                                : social.icon.includes("instagram")
-                                  ? socialLinks.instagram
-                                  : social.href
-                          }
-                          className={`w-12 h-12 bg-linear-to-br ${social.color} text-white rounded-full flex items-center justify-center text-xl hover:scale-110 hover:rotate-12 transition-all duration-300 shadow-lg hover:shadow-xl group/social`}
-                        >
-                          <i
-                            className={`${social.icon} group-hover/social:scale-125 transition-transform duration-300`}
-                          ></i>
-                        </a>
+                        {(() => {
+                          const href = social.icon.includes("facebook")
+                            ? socialLinks.facebook
+                            : social.icon.includes("twitter")
+                              ? socialLinks.twitter
+                              : social.icon.includes("instagram")
+                                ? socialLinks.instagram
+                                : social.href;
+
+                          return (
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label={`Visit ${social.name}`}
+                              className={`w-12 h-12 bg-linear-to-br ${social.color} text-white rounded-full flex items-center justify-center text-xl hover:scale-110 hover:rotate-12 transition-all duration-300 shadow-lg hover:shadow-xl group/social`}
+                            >
+                              <i
+                                className={`${social.icon} group-hover/social:scale-125 transition-transform duration-300`}
+                              ></i>
+                            </a>
+                          );
+                        })()}
                       </li>
                     ))}
                   </ul>

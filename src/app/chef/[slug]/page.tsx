@@ -1,10 +1,20 @@
 import type { Metadata } from "next";
 import ChefDetailPage from "@/components/pages/ChefDetailPage";
-import { getChefs } from "@/services/chefs";
+import { getChefByProfileLink } from "@/services/chefs";
+
+const normalizeChefSlug = (value?: string) => {
+  if (!value) return "";
+  const trimmed = decodeURIComponent(value)
+    .trim()
+    .replace(/^\/+|\/+$/g, "");
+  if (!trimmed) return "";
+  return trimmed.startsWith("chef/") ? trimmed.slice(5) : trimmed;
+};
 
 async function getChefBySlug(slug: string) {
-  const chefs = await getChefs({ isActive: true, limit: 200 }).catch(() => []);
-  return chefs.find((chef) => chef.profileLink === slug) || null;
+  const targetSlug = normalizeChefSlug(slug);
+  if (!targetSlug) return null;
+  return await getChefByProfileLink(targetSlug).catch(() => null);
 }
 
 export async function generateMetadata({

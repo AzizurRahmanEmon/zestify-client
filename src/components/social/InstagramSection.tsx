@@ -24,7 +24,7 @@ const InstagramSection = ({
         <div key={idx}>
           <Image
             src={img}
-            alt="Instagram"
+            alt=""
             className="h-40 md:h-56 lg:h-80 w-full object-cover object-center"
             width={318}
             height={320}
@@ -35,6 +35,7 @@ const InstagramSection = ({
         <div>
           <a
             href={link}
+            aria-label="Visit our Instagram page"
             className="w-24 h-24 flex items-center justify-center bg-zPink/90 text-white rounded-full text-5xl transition hover:bg-zPink hover:scale-110 hover:shadow-lg hover:shadow-[#E2491A]/50"
           >
             <i className="fa-brands fa-instagram"></i>

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import {
   getCurrentCustomer,
   setCurrentCustomer,
-  clearCurrentCustomer,
+  clearCustomerSession,
 } from "@/lib/auth";
 import { API_URL } from "@/lib/api";
 import { toast } from "react-toastify";
@@ -217,7 +217,7 @@ const UserDashboard = () => {
   };
 
   const handleLogout = () => {
-    clearCurrentCustomer();
+    clearCustomerSession();
     router.push("/login");
   };
 

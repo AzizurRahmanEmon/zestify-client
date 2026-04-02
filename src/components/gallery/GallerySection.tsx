@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getGallery, GalleryItem } from "@/services/gallery";
 
@@ -159,7 +160,10 @@ const GallerySection = ({ variant }: Props) => {
         </div>
         {!variant && items.length > 0 && (
           <div>
-            <a href="#" className="ar-btn mt-10 lg:mt-14 mx-auto group">
+            <Link
+              href="/gallery"
+              className="ar-btn mt-10 lg:mt-14 mx-auto group"
+            >
               <span className="relative z-10 transition-all duration-500 group-hover:text-black">
                 Explore All
               </span>
@@ -171,7 +175,7 @@ const GallerySection = ({ variant }: Props) => {
                 className="group-hover:invert z-10"
               />
               <span className="absolute top-0 left-0 w-0 h-full bg-white transition-all duration-500 group-hover:w-full z-0"></span>
-            </a>
+            </Link>
           </div>
         )}
       </div>

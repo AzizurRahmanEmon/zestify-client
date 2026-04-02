@@ -29,7 +29,10 @@ const CtaSection2 = () => {
             </p>
             <div className="flex gap-8 mt-8 xl:mt-12 flex-col sm:flex-row sm:justify-center lg:justify-start items-center animate-fade-in-up animation-delay-600">
               <a
-                href="#"
+                href="https://play.google.com/store"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Download on Google Play"
                 className="py-3 text-white flex gap-2 items-center bg-[#171312] hover:bg-black px-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
               >
                 <Image
@@ -45,7 +48,10 @@ const CtaSection2 = () => {
                 </span>
               </a>
               <a
-                href="#"
+                href="https://www.apple.com/app-store/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Download on the App Store"
                 className="py-3 text-white flex gap-2 items-center bg-[#171312] hover:bg-black px-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
               >
                 <Image

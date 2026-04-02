@@ -24,9 +24,7 @@ interface FormData {
 const paymentOptions = [
   { id: 1, value: "stripe", label: "💳 Stripe" },
   { id: 2, value: "paypal", label: "💳 PayPal" },
-  { id: 3, value: "bank", label: "🏦 Bank Payment" },
-  { id: 4, value: "crypto", label: "🪙 Crypto" },
-  { id: 5, value: "cod", label: "💵 Cash on Delivery" },
+  { id: 3, value: "cod", label: "💵 Cash on Delivery" },
 ];
 
 const locationOptions = [
@@ -430,8 +428,8 @@ const CheckoutForm = () => {
         return;
       }
 
-      if (trimmedData.payment !== "stripe") {
-        toast.info("Only Stripe is enabled right now.");
+      if (!["stripe", "paypal"].includes(trimmedData.payment)) {
+        toast.info("This payment method is not enabled yet.");
         return;
       }
 
@@ -446,50 +444,56 @@ const CheckoutForm = () => {
 
       try {
         setIsSubmitting(true);
-        const res = await fetch(
-          `${API_URL}/payments/stripe/create-checkout-session`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              customer: {
-                name: trimmedData.name,
-                email: trimmedData.email,
-                phone: normalizedPhone,
-                address: trimmedData.address,
-                city: trimmedData.city,
-                state: trimmedData.state,
-                postalCode: trimmedData.postalCode,
-                country: trimmedData.country,
-              },
-              notes: trimmedData.notes,
-              deliveryType: "delivery",
-              deliveryFee: shippingFee,
-              subtotal,
-              totalAmount: orderTotal,
-              items: cartList.map((item) => ({
-                productId: item._id,
-                slug: item.slug,
-                quantity: item.quantity ?? 1,
-              })),
-            }),
-            cache: "no-store",
-          },
-        );
+        const paymentPath =
+          trimmedData.payment === "paypal"
+            ? "paypal/create-order"
+            : "stripe/create-checkout-session";
+        const gatewayLabel =
+          trimmedData.payment === "paypal" ? "PayPal" : "Stripe";
+
+        const res = await fetch(`${API_URL}/payments/${paymentPath}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customer: {
+              name: trimmedData.name,
+              email: trimmedData.email,
+              phone: normalizedPhone,
+              address: trimmedData.address,
+              city: trimmedData.city,
+              state: trimmedData.state,
+              postalCode: trimmedData.postalCode,
+              country: trimmedData.country,
+            },
+            notes: trimmedData.notes,
+            deliveryType: "delivery",
+            deliveryFee: shippingFee,
+            subtotal,
+            totalAmount: orderTotal,
+            items: cartList.map((item) => ({
+              productId: item._id,
+              slug: item.slug,
+              quantity: item.quantity ?? 1,
+            })),
+          }),
+          cache: "no-store",
+        });
 
         const json = await res.json().catch(() => ({}));
         if (!res.ok || json?.success === false) {
-          throw new Error(json?.message || "Failed to start Stripe checkout");
+          throw new Error(
+            json?.message || `Failed to start ${gatewayLabel} checkout`,
+          );
         }
         const url = json?.data?.url as string | undefined;
-        if (!url) throw new Error("Stripe checkout URL missing");
+        if (!url) throw new Error(`${gatewayLabel} checkout URL missing`);
 
         window.location.href = url;
       } catch (err: unknown) {
         const message =
           err instanceof Error
             ? err.message
-            : "Failed to start Stripe checkout";
+            : "Failed to start payment checkout";
         setAlert({ type: "danger", message });
         toast.error(message, { autoClose: ALERT_DURATION });
       } finally {

@@ -18,7 +18,7 @@ const headerMenuItems = [
       { href: "/reservation", label: "Reservation" },
       { href: "/services", label: "Services" },
       { href: "/chef", label: "Chef" },
-      { href: "/chef/dora-schwartz", label: "Chef Details" },
+      { href: "/chef/gordon-martinez", label: "Chef Details" },
       { href: "/login", label: "Login" },
       { href: "/register", label: "Register" },
     ],
@@ -40,7 +40,7 @@ const headerMenuItems = [
     children: [
       { href: "/blog", label: "Blog" },
       {
-        href: "/blog/only-pure-ingredients-enhance-flavor",
+        href: "/blog/the-art-of-perfect-pizza-making",
         label: "Blog Details",
       },
     ],

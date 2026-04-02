@@ -1,16 +1,9 @@
 import type { Metadata } from "next";
-import "swiper/css";
-import "swiper/css/autoplay";
-import "swiper/css/effect-coverflow";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import "react-toastify/dist/ReactToastify.css";
-import "swiper/css/effect-fade";
-import "../styles/fonts/fontawesome.css";
 import "./globals.css";
-import { ToastContainer } from "react-toastify";
 import { primary, secondary } from "./fonts";
 import { ContextProvider } from "@/context/context";
+import AppFontAwesome from "@/components/layout/AppFontAwesome";
+import AppToaster from "@/components/layout/AppToaster";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://zestify.com"),
@@ -70,7 +63,8 @@ export default function RootLayout({
       <body className={`${primary.variable} ${secondary.variable}`}>
         <ContextProvider>
           {children}
-          <ToastContainer />
+          <AppFontAwesome />
+          <AppToaster />
         </ContextProvider>
       </body>
     </html>

@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import type { ProductDataType } from "@/types";
 import { toast } from "react-toastify";
 import { API_URL } from "@/lib/api";
+import { getCurrentCustomer } from "@/lib/auth";
 
 interface ContextData {
   isMobileMenuOpen: boolean;
@@ -45,12 +46,28 @@ interface ContextProviderProps {
 const CART_STORAGE_KEY = "zestify_cart_v1";
 const WISHLIST_STORAGE_KEY = "zestify_wishlist_v1";
 
+function normalizeProductList(value: unknown): ProductDataType[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter((item) => item && typeof item === "object")
+    .map((item) => {
+      const next = item as ProductDataType;
+      const nextQuantity = Math.max(1, Number(next.quantity || 1));
+      return {
+        ...next,
+        quantity: nextQuantity,
+      };
+    })
+    .filter((item) => typeof item.slug === "string" && item.slug.length > 0);
+}
+
 function readStoredList(key: string): ProductDataType[] {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as ProductDataType[]) : [];
+    return normalizeProductList(parsed);
   } catch {
     return [];
   }
@@ -59,6 +76,8 @@ function readStoredList(key: string): ProductDataType[] {
 export const ContextProvider: React.FC<ContextProviderProps> = ({
   children,
 }) => {
+  const [isSessionHydrated, setIsSessionHydrated] = useState(false);
+
   // Mobile Menu Modal
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const toggleMobileMenu = () => {
@@ -190,6 +209,101 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({
       return;
     }
   }, [wishlistList]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const hydrateSessionLists = async () => {
+      const customer = getCurrentCustomer() as any;
+      if (!customer?.token) {
+        if (!cancelled) {
+          setIsSessionHydrated(true);
+        }
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/customers/me`, {
+          headers: {
+            Authorization: `Bearer ${customer.token}`,
+          },
+          cache: "no-store",
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to load customer session data");
+        }
+
+        const json = await res.json();
+        const data = json?.data ?? {};
+
+        if (!cancelled) {
+          setCartList(normalizeProductList(data.savedCart));
+          setWishlistList(normalizeProductList(data.savedWishlist));
+        }
+      } catch {
+        if (!cancelled) {
+          setCartList([]);
+          setWishlistList([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsSessionHydrated(true);
+        }
+      }
+    };
+
+    const handleAuthChanged = () => {
+      setIsSessionHydrated(false);
+      hydrateSessionLists();
+    };
+
+    hydrateSessionLists();
+    window.addEventListener("auth:changed", handleAuthChanged);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("auth:changed", handleAuthChanged);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isSessionHydrated) return;
+
+    const customer = getCurrentCustomer() as any;
+    if (!customer?.token) return;
+
+    const timeout = setTimeout(async () => {
+      try {
+        await fetch(`${API_URL}/customers/me`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${customer.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            savedCart: cartList,
+            savedWishlist: wishlistList,
+          }),
+        });
+      } catch {
+        return;
+      }
+    }, 250);
+
+    return () => clearTimeout(timeout);
+  }, [cartList, wishlistList, isSessionHydrated]);
+
+  useEffect(() => {
+    const handleSessionCleared = () => {
+      setCartList([]);
+      setWishlistList([]);
+    };
+    window.addEventListener("session:cleared", handleSessionCleared);
+    return () => {
+      window.removeEventListener("session:cleared", handleSessionCleared);
+    };
+  }, []);
 
   const addToWishlist = (product: ProductDataType) => {
     let isAdded = false;

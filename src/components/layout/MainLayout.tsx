@@ -1,17 +1,34 @@
 "use client";
 import React, { useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import HeaderSection from "@/components/header/HeaderSection";
-import InstagramSection from "@/components/social/InstagramSection";
 import FooterSection from "@/components/footer/FooterSection";
-import CartModal from "@/components/modal/CartModal";
-import WishlistModal from "@/components/modal/WishlistModal";
-import VideoModal from "@/components/modal/VideoModal";
-import PreviewModal from "@/components/modal/PreviewModal";
-import MobileMenuModal from "@/components/modal/MobileMenuModal";
 import { useCustomContext } from "@/context/context";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { API_URL } from "@/lib/api";
+
+const InstagramSection = dynamic(
+  () => import("@/components/social/InstagramSection"),
+  { ssr: false },
+);
+const CartModal = dynamic(() => import("@/components/modal/CartModal"), {
+  ssr: false,
+});
+const WishlistModal = dynamic(
+  () => import("@/components/modal/WishlistModal"),
+  { ssr: false },
+);
+const VideoModal = dynamic(() => import("@/components/modal/VideoModal"), {
+  ssr: false,
+});
+const PreviewModal = dynamic(() => import("@/components/modal/PreviewModal"), {
+  ssr: false,
+});
+const MobileMenuModal = dynamic(
+  () => import("@/components/modal/MobileMenuModal"),
+  { ssr: false },
+);
 
 interface HeaderProps {
   variant?: string;
@@ -71,23 +88,57 @@ const MainLayout = ({ children, header, insta, footer }: Props) => {
     const checkout = searchParams?.get("checkout");
     if (checkout !== "success" && checkout !== "cancel") return;
 
+    const provider = searchParams?.get("provider") || "stripe";
     const orderId = searchParams?.get("orderId") || "";
     const sessionId = searchParams?.get("session_id") || "";
-    const key = `${checkout}:${orderId}:${sessionId}`;
+    const paypalToken = searchParams?.get("token") || "";
+    const key = `${provider}:${checkout}:${orderId}:${sessionId}:${paypalToken}`;
     if (!orderId) return;
     if (lastHandledRef.current === key) return;
     lastHandledRef.current = key;
 
     const run = async () => {
       try {
-        if (checkout === "cancel" && !sessionId) {
-          await fetch(`${API_URL}/payments/stripe/cancel`, {
+        if (checkout === "cancel") {
+          const cancelEndpoint =
+            provider === "paypal"
+              ? `${API_URL}/payments/paypal/cancel`
+              : `${API_URL}/payments/stripe/cancel`;
+
+          await fetch(cancelEndpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ orderId }),
             cache: "no-store",
           }).catch(() => null);
           toast.error("Payment was cancelled.");
+          return;
+        }
+
+        if (provider === "paypal") {
+          if (!paypalToken) {
+            throw new Error("PayPal token missing");
+          }
+
+          const res = await fetch(
+            `${API_URL}/payments/paypal/verify?orderId=${encodeURIComponent(
+              orderId,
+            )}&token=${encodeURIComponent(paypalToken)}&checkout=${encodeURIComponent(checkout)}`,
+            { cache: "no-store" },
+          );
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok || json?.success === false) {
+            throw new Error(json?.message || "Payment verification failed");
+          }
+
+          const paymentStatus = json?.data?.paymentStatus as string | undefined;
+          if (paymentStatus === "paid") {
+            clearCart();
+            toast.success("Payment successful! Order placed.");
+          } else {
+            toast.error("Payment was not completed.");
+          }
+
           return;
         }
 
@@ -126,8 +177,14 @@ const MainLayout = ({ children, header, insta, footer }: Props) => {
   }, [pathname, searchParams, router, clearCart]);
 
   return (
-    <main className="bg-white lg:pt-37.5 sm:pt-28.75 pt-23.75 relative">
-      {/* Header Section */}
+    <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-999 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-black focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
+
       <HeaderSection
         logo={header?.logo}
         topbarText={header?.topbarText}
@@ -135,56 +192,71 @@ const MainLayout = ({ children, header, insta, footer }: Props) => {
         location={header?.location}
       />
 
-      {children}
+      <main
+        id="main-content"
+        className="bg-white lg:pt-37.5 sm:pt-28.75 pt-23.75 relative"
+      >
+        {children}
 
-      {/* Instagram Section */}
-      <InstagramSection images={insta?.images} link={insta?.link} />
+        {/* Instagram Section */}
+        <InstagramSection images={insta?.images} link={insta?.link} />
 
-      {/* Footer Section */}
-      <FooterSection
-        logo={footer?.logo}
-        shortDesc={footer?.shortDesc}
-        phone={footer?.phone}
-        openHours={footer?.openHours}
-        email={footer?.email}
-        socials={footer?.socials}
-        navs={footer?.navs}
-        services={footer?.services}
-        location={footer?.location}
-        companyName={footer?.companyName}
-        copyright={footer?.copyright}
-      />
+        {/* Footer Section */}
+        <FooterSection
+          logo={footer?.logo}
+          shortDesc={footer?.shortDesc}
+          phone={footer?.phone}
+          openHours={footer?.openHours}
+          email={footer?.email}
+          socials={footer?.socials}
+          navs={footer?.navs}
+          services={footer?.services}
+          location={footer?.location}
+          companyName={footer?.companyName}
+          copyright={footer?.copyright}
+        />
+      </main>
 
       {/* Mobile Menu Modal */}
-      <MobileMenuModal
-        isOpen={isMobileMenuOpen}
-        toggleMenu={toggleMobileMenu}
-      />
+      {isMobileMenuOpen ? (
+        <MobileMenuModal
+          isOpen={isMobileMenuOpen}
+          toggleMenu={toggleMobileMenu}
+        />
+      ) : null}
 
       {/* Cart Modal */}
-      <CartModal
-        isCartModalOpen={isCartModalOpen}
-        closeCartModal={closeCartModal}
-      />
+      {isCartModalOpen ? (
+        <CartModal
+          isCartModalOpen={isCartModalOpen}
+          closeCartModal={closeCartModal}
+        />
+      ) : null}
 
       {/* Wishlist Modal */}
-      <WishlistModal
-        isWishlistModalOpen={isWishlistModalOpen}
-        closeWishlistModal={closeWishlistModal}
-      />
+      {isWishlistModalOpen ? (
+        <WishlistModal
+          isWishlistModalOpen={isWishlistModalOpen}
+          closeWishlistModal={closeWishlistModal}
+        />
+      ) : null}
 
       {/* Video Modal */}
-      <VideoModal
-        isVideoModalOpen={isVideoModalOpen}
-        closeVideoModal={closeVideoModal}
-      />
+      {isVideoModalOpen ? (
+        <VideoModal
+          isVideoModalOpen={isVideoModalOpen}
+          closeVideoModal={closeVideoModal}
+        />
+      ) : null}
 
       {/* Preview Modal */}
-      <PreviewModal
-        isPreviewModalOpen={isPreviewModalOpen}
-        closePreviewModal={closePreviewModal}
-      />
-    </main>
+      {isPreviewModalOpen ? (
+        <PreviewModal
+          isPreviewModalOpen={isPreviewModalOpen}
+          closePreviewModal={closePreviewModal}
+        />
+      ) : null}
+    </>
   );
 };
 

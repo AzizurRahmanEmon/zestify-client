@@ -50,7 +50,7 @@ const MenuSection = ({
                   width={14}
                   height={22}
                   src="/assets/img/fire.png"
-                  alt="fire"
+                  alt=""
                 />
                 <h6 className="ar-subtitle text-white">{subtitle}</h6>
               </div>
@@ -61,7 +61,7 @@ const MenuSection = ({
 
             <ul className="lg:mt-15 mt-12 animate-fade-in-up animation-delay-400">
               {items.map((item, index) => (
-                <div
+                <li
                   key={item.id}
                   className={`${
                     index === 0
@@ -113,7 +113,7 @@ const MenuSection = ({
                       </div>
                     </div>
                   </div>
-                </div>
+                </li>
               ))}
             </ul>
           </div>
@@ -140,7 +140,7 @@ const MenuSection = ({
                 width={33}
                 height={24}
                 src="/assets/img/arrow.png"
-                alt="icon"
+                alt=""
                 className="group-hover:invert z-10"
               />
               <span className="absolute top-0 left-0 w-0 h-full bg-white transition-all duration-500 group-hover:w-full z-0"></span>

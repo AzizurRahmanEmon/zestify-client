@@ -56,10 +56,12 @@ const MainMenuArea = ({ style, variant }: Props) => {
             </Link>
           ) : (
             <button
+              type="button"
               className={`flex items-center justify-between py-2 px-1 ${
                 variant ? "hover:text-zOrange" : "hover:text-zPink"
               } transition-colors duration-300`}
               onClick={() => toggleDropdown(item.id)}
+              aria-expanded={isActiveDropdown === item.id}
             >
               <span>{item.label}</span>
               <svg

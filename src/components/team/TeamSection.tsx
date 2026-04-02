@@ -24,6 +24,24 @@ const TeamSection = ({
   members,
 }: Props) => {
   const displayMembers = members && members.length ? members : [];
+
+  const normalizeChefSlug = (value?: string) => {
+    if (!value) return null;
+    const trimmed = value.trim().replace(/^\/+|\/+$/g, "");
+    if (!trimmed) return null;
+    return trimmed.startsWith("chef/") ? trimmed.slice(5) : trimmed;
+  };
+
+  const getProfileHref = (member: Member) => {
+    const slug = normalizeChefSlug(member.profileLink);
+    return slug ? `/chef/${slug}` : null;
+  };
+
+  const getSocialHref = (value?: string) => {
+    if (!value) return null;
+    return value;
+  };
+
   return (
     <section
       className="py-20 lg:py-30 overflow-hidden"
@@ -83,39 +101,85 @@ const TeamSection = ({
                 </div>
 
                 <div className="border border-[#E7E7E7] py-6 px-4 bg-white rounded-b-lg shadow-lg group-hover:shadow-xl transition-shadow duration-500">
-                  <Link
-                    href={`/chef/${member.profileLink || "#"}`}
-                    className="block group-hover:text-zPink font-primary font-semibold text-2xl lg:text-3xl text-center transition-colors duration-300"
-                  >
-                    {member.name}
-                  </Link>
+                  {getProfileHref(member) ? (
+                    <Link
+                      href={getProfileHref(member) as string}
+                      className="block group-hover:text-zPink font-primary font-semibold text-2xl lg:text-3xl text-center transition-colors duration-300"
+                    >
+                      {member.name}
+                    </Link>
+                  ) : (
+                    <span className="block font-primary font-semibold text-2xl lg:text-3xl text-center text-textColor">
+                      {member.name}
+                    </span>
+                  )}
                   <p className="text-gray-600 text-center mt-2 text-sm">
                     {member.label}
                   </p>
                   <ul className="flex justify-center items-center gap-4 mt-4">
                     <li>
-                      <Link
-                        href={member.socialLinks?.linkedin || "#"}
-                        className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-zPink hover:text-white transition-colors duration-300"
-                      >
-                        IN
-                      </Link>
+                      {getSocialHref(member.socialLinks?.linkedin) ? (
+                        <Link
+                          href={
+                            getSocialHref(
+                              member.socialLinks?.linkedin,
+                            ) as string
+                          }
+                          aria-label={`${member.name} on LinkedIn`}
+                          className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-zPink hover:text-white transition-colors duration-300"
+                        >
+                          IN
+                        </Link>
+                      ) : (
+                        <span
+                          aria-hidden="true"
+                          className="w-10 h-10 bg-gray-100/60 text-gray-400 rounded-full flex items-center justify-center"
+                        >
+                          IN
+                        </span>
+                      )}
                     </li>
                     <li>
-                      <Link
-                        href={member.socialLinks?.facebook || "#"}
-                        className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-zPink hover:text-white transition-colors duration-300"
-                      >
-                        FB
-                      </Link>
+                      {getSocialHref(member.socialLinks?.facebook) ? (
+                        <Link
+                          href={
+                            getSocialHref(
+                              member.socialLinks?.facebook,
+                            ) as string
+                          }
+                          aria-label={`${member.name} on Facebook`}
+                          className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-zPink hover:text-white transition-colors duration-300"
+                        >
+                          FB
+                        </Link>
+                      ) : (
+                        <span
+                          aria-hidden="true"
+                          className="w-10 h-10 bg-gray-100/60 text-gray-400 rounded-full flex items-center justify-center"
+                        >
+                          FB
+                        </span>
+                      )}
                     </li>
                     <li>
-                      <Link
-                        href={member.socialLinks?.twitter || "#"}
-                        className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-zPink hover:text-white transition-colors duration-300"
-                      >
-                        TW
-                      </Link>
+                      {getSocialHref(member.socialLinks?.twitter) ? (
+                        <Link
+                          href={
+                            getSocialHref(member.socialLinks?.twitter) as string
+                          }
+                          aria-label={`${member.name} on Twitter`}
+                          className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-zPink hover:text-white transition-colors duration-300"
+                        >
+                          TW
+                        </Link>
+                      ) : (
+                        <span
+                          aria-hidden="true"
+                          className="w-10 h-10 bg-gray-100/60 text-gray-400 rounded-full flex items-center justify-center"
+                        >
+                          TW
+                        </span>
+                      )}
                     </li>
                   </ul>
                 </div>

@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { canReviewProduct, postProductReview } from "@/lib/api";
 import { getCurrentCustomer } from "@/lib/auth";
+import Link from "next/link";
 
 type Props = {
   productSlug: string;
@@ -20,7 +21,9 @@ const ReviewForm = ({ productSlug, onPosted }: Props) => {
   const [canReview, setCanReview] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const cleanEmail = String(email || "").toLowerCase().trim();
+    const cleanEmail = String(email || "")
+      .toLowerCase()
+      .trim();
     if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       setCanReview(null);
       return;
@@ -44,7 +47,7 @@ const ReviewForm = ({ productSlug, onPosted }: Props) => {
     !name.trim() ||
     !email.trim() ||
     review.trim().length < 10 ||
-    (canReview === false);
+    canReview === false;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,7 +101,10 @@ const ReviewForm = ({ productSlug, onPosted }: Props) => {
       <h4 className="text-2xl font-semibold pb-2 border-b-2 border-zPink w-max">
         Add Review
       </h4>
-      <form className="flex flex-col gap-8 mt-10 xl:w-[90%]" onSubmit={handleSubmit}>
+      <form
+        className="flex flex-col gap-8 mt-10 xl:w-[90%]"
+        onSubmit={handleSubmit}
+      >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="relative group">
             <input
@@ -143,17 +149,23 @@ const ReviewForm = ({ productSlug, onPosted }: Props) => {
 
         {canReview === false && (
           <div className="text-sm text-red-600">
-            Only customers who purchased this product can review it (using the same email).
+            Only customers who purchased this product can review it (using the
+            same email).
           </div>
         )}
 
         <div className="relative">
           <fieldset className="border-2 border-gray-300 rounded-xl px-6 py-4 hover:border-gray-400 transition-all duration-300 focus-within:border-zPink">
-            <legend className="px-2 text-sm text-gray-500 bg-white">Rating *</legend>
+            <legend className="px-2 text-sm text-gray-500 bg-white">
+              Rating *
+            </legend>
             <div className="flex gap-4 mt-2" role="radiogroup">
               <div className="flex items-start flex-col gap-5 md:flex-row md:gap-8">
                 {[5, 4, 3, 2, 1].map((v) => (
-                  <label key={v} className="flex items-center gap-2 cursor-pointer group">
+                  <label
+                    key={v}
+                    className="flex items-center gap-2 cursor-pointer group"
+                  >
                     <input
                       type="radio"
                       name="rating"
@@ -210,12 +222,15 @@ const ReviewForm = ({ productSlug, onPosted }: Props) => {
             className="w-5 h-5 mt-0.5 text-zPink border-2 border-gray-300 rounded focus:ring-2 focus:ring-zPink focus:ring-offset-2 disabled:opacity-50"
             disabled={submitting}
           />
-          <label htmlFor="consent" className="text-sm text-gray-600 cursor-pointer flex-1">
+          <label
+            htmlFor="consent"
+            className="text-sm text-gray-600 cursor-pointer flex-1"
+          >
             I agree to the
-            <a href="#" className="text-zPink hover:underline">
+            <Link href="/privacy" className="text-zPink hover:underline">
               {" "}
               privacy policy{" "}
-            </a>
+            </Link>
             and consent to my review being published publicly.
           </label>
         </div>

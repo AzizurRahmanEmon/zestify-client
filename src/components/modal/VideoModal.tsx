@@ -13,7 +13,7 @@ const VideoModal = ({ isVideoModalOpen, closeVideoModal }: Props) => {
       <div
         className={`ar-modal-overlay ${isVideoModalOpen ? "show" : "hide"}`}
         id="videoModalOverlay"
-        role="button"
+        aria-hidden="true"
         onClick={closeVideoModal}
       ></div>
       <div

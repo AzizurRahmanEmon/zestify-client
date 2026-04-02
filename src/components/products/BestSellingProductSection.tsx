@@ -81,9 +81,10 @@ const BestSellingProductSection = ({
                     </span>
                     {formatPrice(dish.price ?? 0)}$
                   </p>
-                  <a
+                  <button
+                    type="button"
+                    aria-label={`Add ${dish.name} to cart`}
                     className="ar-btn mx-auto mt-8"
-                    role="button"
                     onClick={() => addToCart(dish as any)}
                   >
                     <Image
@@ -97,7 +98,7 @@ const BestSellingProductSection = ({
                       Add To Cart
                     </span>
                     <span className="absolute top-0 left-0 w-0 h-full bg-white transition-all duration-500 group-hover:w-full z-0"></span>
-                  </a>
+                  </button>
                 </div>
               </div>
             ))}

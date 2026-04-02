@@ -1,6 +1,11 @@
 "use client";
-import HomeReservationForm from "@/components/form/HomeReservationForm";
+import dynamic from "next/dynamic";
 import Image from "next/image";
+
+const HomeReservationForm = dynamic(
+  () => import("@/components/form/HomeReservationForm"),
+  { ssr: false },
+);
 
 interface Props {
   title?: string;
@@ -31,6 +36,7 @@ const ReservationSection = ({
   contactInfo,
   businessHours,
 }: Props) => {
+  const titleLines = title.split("\n");
   const dayIndex = new Date().getDay();
   const dayNames = [
     "Sunday",
@@ -126,16 +132,16 @@ const ReservationSection = ({
                   width={14}
                   height={22}
                   src="/assets/img/fire.png"
-                  alt="fire"
+                  alt=""
                 />
                 <h6 className="ar-subtitle text-white">{subtitle}</h6>
               </div>
               <div className="animate-fade-in-up animation-delay-200">
                 <h2 className="ar-title mt-3 text-white text-center xl:text-start">
-                  {title.split("\n").map((line, i) => (
+                  {titleLines.map((line, i) => (
                     <span key={i}>
                       {line}
-                      {i < title.split("\n").length - 1 && <br />}
+                      {i < titleLines.length - 1 && <br />}
                     </span>
                   ))}
                 </h2>
@@ -159,7 +165,7 @@ const ReservationSection = ({
                         width={item.iconWidth}
                         height={item.iconHeight}
                         src={item.icon}
-                        alt="icon"
+                        alt=""
                       />
                     </div>
                     <div className="text-white text-base">

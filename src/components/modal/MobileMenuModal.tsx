@@ -123,19 +123,28 @@ const MobileMenuModal = ({ isOpen, toggleMenu }: Props) => {
               {/* Social Links */}
               <div className="flex space-x-4 justify-center">
                 <a
-                  href="#"
+                  href="https://facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Visit Facebook"
                   className="w-12 h-12 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-white/60 hover:text-white transition-all duration-300"
                 >
                   <i className="fa-brands fa-facebook-f text-lg"></i>
                 </a>
                 <a
-                  href="#"
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Visit Instagram"
                   className="w-12 h-12 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-white/60 hover:text-white transition-all duration-300"
                 >
                   <i className="fa-brands fa-instagram text-lg"></i>
                 </a>
                 <a
-                  href="#"
+                  href="https://twitter.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Visit Twitter"
                   className="w-12 h-12 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-white/60 hover:text-white transition-all duration-300"
                 >
                   <i className="fa-brands fa-twitter text-lg"></i>

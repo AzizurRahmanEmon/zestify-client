@@ -9,7 +9,7 @@ const VideoSection = ({ bgImg, videoUrl }: Props) => {
   const { openVideoModal } = useCustomContext();
   return (
     <div
-      className="relative min-h-170.75 bg-center bg-cover bg-no-repeat bg-fixed flex justify-center items-center overflow-hidden group"
+      className="relative min-h-170.75 bg-center bg-cover bg-no-repeat flex justify-center items-center overflow-hidden group"
       style={{ backgroundImage: `url(${bgImg})` }}
     >
       {/* Modern Overlay with Gradient */}

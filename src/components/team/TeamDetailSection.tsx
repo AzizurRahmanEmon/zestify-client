@@ -36,7 +36,12 @@ const chefStats = [
   { id: 2, label: "Complete Work", percentage: 50 },
   { id: 3, label: "Satisfied Client", percentage: 95 },
 ];
-const socialIcons = ["facebook-f", "twitter", "vine", "instagram"];
+const socialIcons = [
+  { icon: "facebook-f", href: "https://facebook.com" },
+  { icon: "twitter", href: "https://twitter.com" },
+  { icon: "vine", href: "https://vine.co" },
+  { icon: "instagram", href: "https://instagram.com" },
+];
 const TeamDetailSection = ({ name, img }: Props) => {
   return (
     <section
@@ -208,13 +213,16 @@ const TeamDetailSection = ({ name, img }: Props) => {
 
                 {/* Social Icons */}
                 <div className="flex justify-center space-x-4 mt-8 pt-8 border-t border-gray-300">
-                  {socialIcons.map((icon) => (
+                  {socialIcons.map((social) => (
                     <a
-                      key={icon}
-                      href="#"
+                      key={social.icon}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Visit ${social.icon} profile`}
                       className="w-12 h-12 flex items-center justify-center rounded-full bg-white text-gray-900 hover:bg-zPink hover:text-white transition-all duration-300 transform hover:scale-110 shadow-lg"
                     >
-                      <i className={`fa-brands fa-${icon} text-lg`}></i>
+                      <i className={`fa-brands fa-${social.icon} text-lg`}></i>
                     </a>
                   ))}
                 </div>

@@ -66,10 +66,30 @@ const blogFeatures = [
 ];
 
 const blogSocials = [
-  { id: 1, icon: "fa-facebook-f", color: "hover:text-blue-600" },
-  { id: 2, icon: "fa-instagram", color: "hover:text-pink-600" },
-  { id: 3, icon: "fa-twitter", color: "hover:text-blue-400" },
-  { id: 4, icon: "fa-linkedin", color: "hover:text-blue-700" },
+  {
+    id: 1,
+    icon: "fa-facebook-f",
+    color: "hover:text-blue-600",
+    label: "Facebook",
+  },
+  {
+    id: 2,
+    icon: "fa-instagram",
+    color: "hover:text-pink-600",
+    label: "Instagram",
+  },
+  {
+    id: 3,
+    icon: "fa-twitter",
+    color: "hover:text-blue-400",
+    label: "Twitter",
+  },
+  {
+    id: 4,
+    icon: "fa-linkedin",
+    color: "hover:text-blue-700",
+    label: "LinkedIn",
+  },
 ];
 
 const BlogDetailSection = ({
@@ -96,6 +116,9 @@ const BlogDetailSection = ({
   // Check if any filters are active
   const hasActiveFilters =
     blogSearchTerm || blogSelectedCategory || blogSelectedTags.length > 0;
+
+  const canonicalPostUrl = `https://zestify.com/blog/${blog.link}`;
+  const encodedPostUrl = encodeURIComponent(canonicalPostUrl);
 
   return (
     <section className="bg-linear-to-br from-gray-50 to-white">
@@ -376,7 +399,18 @@ const BlogDetailSection = ({
                           {blogSocials.map((social) => (
                             <a
                               key={social.id}
-                              href="#"
+                              href={
+                                social.icon === "fa-facebook-f"
+                                  ? `https://www.facebook.com/sharer/sharer.php?u=${encodedPostUrl}`
+                                  : social.icon === "fa-twitter"
+                                    ? `https://twitter.com/intent/tweet?url=${encodedPostUrl}`
+                                    : social.icon === "fa-linkedin"
+                                      ? `https://www.linkedin.com/sharing/share-offsite/?url=${encodedPostUrl}`
+                                      : canonicalPostUrl
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label={`Share this post on ${social.label}`}
                               className={`w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 ${social.color} transition-all duration-300 hover:scale-110 hover:shadow-md`}
                             >
                               <i className={`fa-brands ${social.icon}`}></i>
