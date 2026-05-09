@@ -3,6 +3,11 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
 import { API_URL } from "@/lib/api";
 
+const TENANT_ID =
+  process.env.NEXT_PUBLIC_TENANT_ID ||
+  process.env.NEXT_PUBLIC_TENANT_SLUG ||
+  "";
+
 // Constants
 const ALERT_DURATION = 4000;
 
@@ -78,7 +83,10 @@ const BlogSubscriptionForm = () => {
       try {
         const res = await fetch(`${API_URL}/newsletters/subscribe`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+          },
           body: JSON.stringify({ email: trimmedEmail, source: "blog" }),
           cache: "no-store",
         });
@@ -89,9 +97,12 @@ const BlogSubscriptionForm = () => {
 
         setAlert({
           type: "success",
-          message: json?.message || "Successfully subscribed to our newsletter!",
+          message:
+            json?.message || "Successfully subscribed to our newsletter!",
         });
-        toast.success("Subscription successful!", { autoClose: ALERT_DURATION });
+        toast.success("Subscription successful!", {
+          autoClose: ALERT_DURATION,
+        });
         setEmail("");
       } catch (err: unknown) {
         const message =

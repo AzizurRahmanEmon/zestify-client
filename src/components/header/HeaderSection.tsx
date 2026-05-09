@@ -61,8 +61,8 @@ const HeaderSection = ({
           </Link>
         </div>
         <div className="flex-1 -ml-px z-20">
-          <div className="h-12.5 lg:h-16.25 flex items-center bg-[#B1133A] text-white justify-end xl:justify-between gap-8 2xl:px-20 lg:px-10 px-7.5 xl:text-sm 2xl:text-base">
-            <div className="hidden xl:flex items-center gap-1">
+          <div className="h-12.5 lg:h-16.25 flex items-center bg-[#B1133A] text-white justify-end 2xl:justify-between gap-8 2xl:px-20 lg:px-10 px-7.5 2xl:text-sm ">
+            <div className="hidden 2xl:flex items-center gap-1">
               <Image width={14} height={22} src="/assets/img/fire.png" alt="" />
               <p className="pl-1 mt-1">{topbarText}</p>
             </div>
@@ -78,10 +78,10 @@ const HeaderSection = ({
               <span>{email}</span>
             </a>
           </div>
-          <div className="bg-white h-[calc(100%-50px)] lg:h-[calc(100%-65px)] flex justify-end xl:justify-between items-center 2xl:px-20 lg:px-10 px-7.5">
+          <div className="bg-white h-[calc(100%-50px)] lg:h-[calc(100%-65px)] flex justify-end 2xl:justify-between items-center 2xl:px-20 lg:px-10 px-7.5">
             <div className="main-menu" id="mainMenu">
               <MainMenuArea />
-              <div className="flex items-center gap-6 pr-2.5">
+              <div className="flex items-center gap-6">
                 <HeaderSearchForm />
                 <div className="flex items-center gap-6">
                   <button
@@ -97,7 +97,10 @@ const HeaderSection = ({
                       height="23"
                       src="/assets/img/heart.png"
                     />
-                    <span className="bg-zPink text-white w-4.5 h-4.5 rounded-full absolute -top-2.5 -right-2.5 flex items-center justify-center text-sm">
+                    <span
+                      suppressHydrationWarning
+                      className="bg-zPink text-white w-4.5 h-4.5 rounded-full absolute -top-2.5 -right-2.5 flex items-center justify-center text-sm"
+                    >
                       {totalWishlistQuantity}
                     </span>
                   </button>
@@ -114,7 +117,10 @@ const HeaderSection = ({
                       height="21"
                       src="/assets/img/shopping-cart.png"
                     />
-                    <span className="bg-zPink text-white w-4.5 h-4.5 rounded-full absolute -top-2.5 -right-2.5 flex items-center justify-center text-sm">
+                    <span
+                      suppressHydrationWarning
+                      className="bg-zPink text-white w-4.5 h-4.5 rounded-full absolute -top-2.5 -right-2.5 flex items-center justify-center text-sm"
+                    >
                       {totalCartQuantity}
                     </span>
                   </button>

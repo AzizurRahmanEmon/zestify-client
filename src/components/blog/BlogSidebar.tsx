@@ -20,13 +20,13 @@ type Props = {
   latestPosts?: SidebarPost[];
 };
 
-const BlogSidebar = ({ categories = [], tags = [], latestPosts = [] }: Props) => {
-  const {
-    toggleCategory,
-    blogSelectedTags,
-    toggleTag,
-    blogSelectedCategory,
-  } = useBlogFilters();
+const BlogSidebar = ({
+  categories = [],
+  tags = [],
+  latestPosts = [],
+}: Props) => {
+  const { toggleCategory, blogSelectedTags, toggleTag, blogSelectedCategory } =
+    useBlogFilters();
 
   return (
     <aside className="space-y-8">

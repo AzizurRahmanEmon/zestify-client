@@ -51,6 +51,7 @@ const MenuSection = ({
                   height={22}
                   src="/assets/img/fire.png"
                   alt=""
+                  className="w-3.5 h-auto"
                 />
                 <h6 className="ar-subtitle text-white">{subtitle}</h6>
               </div>
@@ -78,7 +79,7 @@ const MenuSection = ({
                         height={108}
                         src={item.imgSrc}
                         alt={item.altText}
-                        className="lg:h-full lg:w-full w-20 h-20 object-cover transition-all duration-500 group-hover:scale-110 group-hover:brightness-110"
+                        className="lg:h-full lg:w-full w-20 h-auto aspect-square object-cover transition-all duration-500 group-hover:scale-110 group-hover:brightness-110"
                       />
                     </div>
                     <div className="flex-1 flex flex-col md:flex-row items-center md:items-start justify-between gap-8 min-w-0">
@@ -125,7 +126,7 @@ const MenuSection = ({
                 height={654}
                 src="/assets/img/menu-banner.png"
                 alt="banner"
-                className="h-full aspect-[1.2] object-cover float-animation"
+                className="h-full w-auto aspect-[1.2] object-cover float-animation"
               />
             </div>
           </div>
@@ -141,7 +142,7 @@ const MenuSection = ({
                 height={24}
                 src="/assets/img/arrow.png"
                 alt=""
-                className="group-hover:invert z-10"
+                className="group-hover:invert z-10 w-8.25 h-auto"
               />
               <span className="absolute top-0 left-0 w-0 h-full bg-white transition-all duration-500 group-hover:w-full z-0"></span>
             </Link>

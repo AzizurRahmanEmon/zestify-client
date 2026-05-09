@@ -126,10 +126,12 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({
   };
 
   // Add to cart
-  const [cartList, setCartList] = useState<ProductDataType[]>(() => {
-    if (typeof window === "undefined") return [];
-    return readStoredList(CART_STORAGE_KEY);
-  });
+  const [cartList, setCartList] = useState<ProductDataType[]>([]);
+
+  useEffect(() => {
+    const stored = readStoredList(CART_STORAGE_KEY);
+    if (stored.length > 0) setCartList(stored);
+  }, []);
 
   useEffect(() => {
     try {
@@ -197,10 +199,12 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({
   );
 
   // Add to wishlist
-  const [wishlistList, setWishlistList] = useState<ProductDataType[]>(() => {
-    if (typeof window === "undefined") return [];
-    return readStoredList(WISHLIST_STORAGE_KEY);
-  });
+  const [wishlistList, setWishlistList] = useState<ProductDataType[]>([]);
+
+  useEffect(() => {
+    const stored = readStoredList(WISHLIST_STORAGE_KEY);
+    if (stored.length > 0) setWishlistList(stored);
+  }, []);
 
   useEffect(() => {
     try {

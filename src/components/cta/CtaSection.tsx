@@ -40,7 +40,7 @@ const CtaSection = ({
               height={24}
               src="/assets/img/right-arrow.png"
               alt="arrow"
-              className="absolute top-1/2 -translate-y-1/2 -left-4 xl:-left-6"
+              className="absolute top-1/2 w-auto h-6 -translate-y-1/2 -left-4 xl:-left-6"
             />
             <span className="block xl:w-16 xl:h-16 w-12 h-12 border border-white rounded-full"></span>
           </div>
@@ -69,7 +69,7 @@ const CtaSection = ({
               height={24}
               src="/assets/img/right-arrow.png"
               alt="arrow"
-              className="absolute top-1/2 -translate-y-1/2 -left-4 xl:-left-6"
+              className="absolute top-1/2 w-auto h-6 -translate-y-1/2 -left-4 xl:-left-6"
             />
             <span className="block xl:w-16 xl:h-16 w-12 h-12 border border-white rounded-full"></span>
           </div>

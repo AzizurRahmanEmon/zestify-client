@@ -32,7 +32,13 @@ const BlogSection = ({
         <div className="py-20 lg:py-30">
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 animate-fade-in-up">
-              <Image width={14} height={22} src="/assets/img/fire.png" alt="" />
+              <Image
+                width={14}
+                height={22}
+                src="/assets/img/fire.png"
+                alt=""
+                className="w-3.5 h-auto"
+              />
               <h6 className="ar-subtitle">{subtitle}</h6>
             </div>
             <div className="animate-fade-in-up animation-delay-200">
@@ -55,7 +61,7 @@ const BlogSection = ({
                       height={400}
                       src={blog.img}
                       alt={blog.title}
-                      className="h-65 sm:h-75 xl:h-100 object-cover w-full transition-transform duration-300 ease-in-out group-hover:scale-110"
+                      className="h-auto object-cover w-full aspect-438/400 transition-transform duration-300 ease-in-out group-hover:scale-110"
                     />
                   </div>
                 </div>

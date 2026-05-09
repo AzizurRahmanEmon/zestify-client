@@ -47,7 +47,7 @@ const AboutSection = ({
                 height={678}
                 src={image1}
                 alt="Freshly prepared featured dish"
-                className="w-4/5 mx-auto lg:mx-0 aspect-[0.81]"
+                className="w-4/5 h-auto mx-auto lg:mx-0 aspect-[0.81]"
               />
             </div>
             <div>
@@ -56,7 +56,7 @@ const AboutSection = ({
                 height={554}
                 src={image2}
                 alt="Chef plating a signature meal"
-                className="z-10 absolute left-1/4 -bottom-22.5 w-[70%] aspect-[0.866] float-animation"
+                className="z-10 h-auto absolute left-1/4 -bottom-22.5 w-[70%] aspect-[0.866] float-animation"
               />
             </div>
           </div>
@@ -69,6 +69,7 @@ const AboutSection = ({
                   height={22}
                   src="/assets/img/fire.png"
                   alt=""
+                  className="w-3.5 h-auto"
                 />
                 <h6 className="ar-subtitle">{subtitle}</h6>
               </div>
@@ -100,7 +101,7 @@ const AboutSection = ({
                     height={176}
                     src={videoPoster}
                     alt="Preview of Zestify story video"
-                    className="h-44 w-56 xl:mx-0 mx-auto object-cover"
+                    className="h-auto aspect-224/176 w-56 xl:mx-0 mx-auto object-cover"
                   />
                   <button
                     type="button"

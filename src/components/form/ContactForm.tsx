@@ -3,6 +3,12 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
 import Image from "next/image";
 import { API_URL } from "@/lib/api";
+
+const TENANT_ID =
+  process.env.NEXT_PUBLIC_TENANT_ID ||
+  process.env.NEXT_PUBLIC_TENANT_SLUG ||
+  "";
+
 // Constants
 const ALERT_DURATION = 4000;
 
@@ -188,7 +194,10 @@ const ContactForm = () => {
       try {
         const res = await fetch(`${API_URL}/messages`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+          },
           body: JSON.stringify({
             name: trimmedData.name,
             email: trimmedData.email,
@@ -213,7 +222,8 @@ const ContactForm = () => {
         setAlert({
           type: "success",
           message:
-            (json && json.message) || "Your message has been sent successfully!",
+            (json && json.message) ||
+            "Your message has been sent successfully!",
         });
         toast.success("Message sent successfully!", {
           autoClose: ALERT_DURATION,

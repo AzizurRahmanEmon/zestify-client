@@ -153,6 +153,19 @@ const LoginForm = () => {
           );
         }
         const json = await res.json();
+
+        // OTP is required — redirect to verification page
+        if (json.mode === "otp") {
+          toast.success("Check your email for the verification code.", {
+            autoClose: ALERT_DURATION,
+          });
+          router.push(
+            `/verify-otp?email=${encodeURIComponent(trimmedData.email)}`,
+          );
+          return;
+        }
+
+        // Fallback for non-OTP responses (should not happen)
         const customer = json?.data ?? json;
         setCurrentCustomer(customer);
         setAlert({

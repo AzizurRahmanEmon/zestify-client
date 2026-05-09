@@ -57,6 +57,7 @@ const TeamSection = ({
               height={22}
               src="/assets/img/fire.png"
               alt="fire"
+              className="w-3.5 h-auto"
             />
             <h6 className="ar-subtitle">{subtitle}</h6>
           </div>
@@ -75,11 +76,11 @@ const TeamSection = ({
               >
                 <div className="relative h-114 overflow-hidden rounded-t-lg">
                   <Image
-                    width={438}
-                    height={456}
+                    width={696}
+                    height={600}
                     src={member.imgSrc}
                     alt={member.altText || member.name}
-                    className="relative z-10 object-cover m-auto h-full"
+                    className="relative z-10 object-cover m-auto h-114 w-auto aspect-438/456"
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
                   <div className="border border-[#E7E7E7] border-b-0 min-h-46 absolute w-full bottom-0 transition-all duration-500 ease-in-out group-hover:min-h-114 bg-white/90 backdrop-blur-sm"></div>

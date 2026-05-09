@@ -39,17 +39,18 @@ function buildSidebarMeta(blogs: any[]) {
 export default async function Home({
   searchParams,
 }: {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
-  const search = getParam(searchParams, "search") || undefined;
-  const category = getParam(searchParams, "category") || undefined;
-  const tagsParam = getParam(searchParams, "tags") || "";
+  const sp = await searchParams;
+  const search = getParam(sp, "search") || undefined;
+  const category = getParam(sp, "category") || undefined;
+  const tagsParam = getParam(sp, "tags") || "";
   const tags = tagsParam
     .split(",")
     .map((t) => t.trim())
     .filter(Boolean);
-  const page = parseInt(getParam(searchParams, "page") || "1") || 1;
-  const sort = getParam(searchParams, "sort") || "date-desc";
+  const page = parseInt(getParam(sp, "page") || "1") || 1;
+  const sort = getParam(sp, "sort") || "date-desc";
 
   const [{ blogs, pages }, meta] = await Promise.all([
     getBlogsList({

@@ -1,7 +1,9 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { toast } from "react-toastify";
 import { API_URL } from "@/lib/api";
+import { getCurrentCustomer } from "@/lib/auth";
 import DatePicker from "./DatePicker";
 
 const TENANT_ID =
@@ -36,6 +38,35 @@ const HomeReservationForm = () => {
   >([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
+  // Auto-fill from customer profile if logged in; do NOT redirect on mount
+  useEffect(() => {
+    const customer = getCurrentCustomer() as any;
+    if (!customer?.token) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      name: customer.name || prev.name,
+      email: customer.email || prev.email,
+      phone: customer.phone || prev.phone,
+    }));
+
+    fetch(`${API_URL}/customers/me`, {
+      headers: { Authorization: `Bearer ${customer.token}` },
+      cache: "no-store",
+    })
+      .then((r) => r.json())
+      .then((json) => {
+        const data = json?.data ?? {};
+        setFormData((prev) => ({
+          ...prev,
+          name: data.name || prev.name,
+          email: data.email || prev.email,
+          phone: data.phone || prev.phone,
+        }));
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (alert) {
       const timer = setTimeout(() => {
@@ -57,6 +88,8 @@ const HomeReservationForm = () => {
   }, []);
 
   const handleInputChange = (field: string, value: string | boolean) => {
+    // Lock email field only when logged in
+    if (field === "email" && (getCurrentCustomer() as any)?.token) return;
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (alert?.type === "danger") {
       setAlert(null);
@@ -231,6 +264,23 @@ const HomeReservationForm = () => {
       parsedGuests = parseInt(trimmedData.guests, 10) || 1;
     }
 
+    const customer = getCurrentCustomer() as any;
+    if (!customer?.token) {
+      toast.error("Please login to make a reservation.", { autoClose: 4000 });
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        date: "",
+        time: "",
+        guests: "",
+        message: "",
+        terms: false,
+        marketing: false,
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const res = await fetch(`${API_URL}/reservations`, {
@@ -238,6 +288,7 @@ const HomeReservationForm = () => {
         headers: {
           "Content-Type": "application/json",
           ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+          Authorization: `Bearer ${customer.token}`,
         },
         body: JSON.stringify({
           name: trimmedData.name,
@@ -363,10 +414,20 @@ const HomeReservationForm = () => {
             name="email"
             value={formData.email}
             onChange={(e) => handleInputChange("email", e.target.value)}
+            readOnly={!!(getCurrentCustomer() as any)?.token}
             disabled={isSubmitting}
-            className="peer w-full h-16 px-4 pt-6 pb-2 bg-transparent border-2 border-gray-600 rounded-xl text-gray-100 placeholder-transparent transition-all duration-300 focus:border-zPink focus:outline-none hover:border-zPink focus:ring-1 focus:ring-zPink/80 disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`peer w-full h-16 px-4 pt-6 pb-2 border-2 border-gray-600 rounded-xl placeholder-transparent transition-all duration-300 disabled:opacity-50 ${
+              (getCurrentCustomer() as any)?.token
+                ? "bg-gray-700/50 text-gray-300 focus:outline-none cursor-not-allowed"
+                : "bg-transparent text-gray-100 focus:border-zPink focus:outline-none hover:border-zPink focus:ring-1 focus:ring-zPink/80"
+            }`}
             placeholder="Email Address"
             required
+            title={
+              (getCurrentCustomer() as any)?.token
+                ? "Your registered email (cannot be changed)"
+                : "Enter your email address"
+            }
           />
           <label
             htmlFor="email"

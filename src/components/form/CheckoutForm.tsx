@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { API_URL } from "@/lib/api";
 import { useCustomContext } from "@/context/context";
@@ -7,6 +8,10 @@ import { getCurrentCustomer } from "@/lib/auth";
 
 // Constants
 const ALERT_DURATION = 4000;
+const TENANT_ID =
+  process.env.NEXT_PUBLIC_TENANT_ID ||
+  process.env.NEXT_PUBLIC_TENANT_SLUG ||
+  "";
 
 interface FormData {
   name: string;
@@ -95,6 +100,7 @@ const locationOptions = [
 ] as const;
 
 const CheckoutForm = () => {
+  const router = useRouter();
   const { cartList, totalCartPrice } = useCustomContext();
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -133,43 +139,79 @@ const CheckoutForm = () => {
     loyaltyPointValue: 1,
     minimumPointsToRedeem: 10,
   });
+  const [currentCustomer, setCurrentCustomer] = useState<any>(null);
 
-  // Effect to fetch customer addresses if logged in
+  // Auto-fill from customer profile if logged in; do NOT redirect on mount
   useEffect(() => {
     const customer = getCurrentCustomer();
-    if (customer && customer.token) {
-      // Set initial profile info
-      setFormData((prev) => ({
-        ...prev,
-        name: customer.name || prev.name,
-        email: customer.email || prev.email,
-        phone: customer.phone || prev.phone,
-      }));
+    setCurrentCustomer(customer);
+    if (!customer?.token) return;
 
-      // Fetch full customer data for addresses
-      fetch(`${API_URL}/customers/me`, {
-        headers: {
-          Authorization: `Bearer ${customer.token}`,
-        },
+    // Set initial profile info
+    setFormData((prev) => ({
+      ...prev,
+      name: customer.name || prev.name,
+      email: customer.email || prev.email,
+      phone: customer.phone || prev.phone,
+    }));
+
+    // Fetch full customer data for addresses
+    fetch(`${API_URL}/customers/me`, {
+      headers: {
+        Authorization: `Bearer ${customer.token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data.savedAddresses) {
+          setCustomerAddresses(json.data.savedAddresses);
+          setAvailableLoyaltyPoints(Number(json.data.loyaltyPoints || 0));
+          // Auto-select default address
+          const defaultAddr = json.data.savedAddresses.find(
+            (a: any) => a.isDefault,
+          );
+          if (defaultAddr) {
+            handleAddressSelect(defaultAddr);
+          }
+        }
       })
-        .then((res) => res.json())
+      .catch((err) => console.error("Error fetching addresses:", err));
+
+    // Restore applied coupon from cart
+    const savedCoupon = localStorage.getItem("appliedCoupon");
+    if (savedCoupon) {
+      setCouponCode(savedCoupon);
+      fetch(`${API_URL}/coupons/validate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+        },
+        body: JSON.stringify({
+          code: savedCoupon,
+          subtotal: Number(totalCartPrice || 0),
+        }),
+      })
+        .then((res) => res.json().catch(() => ({})))
         .then((json) => {
-          if (json.success && json.data.savedAddresses) {
-            setCustomerAddresses(json.data.savedAddresses);
-            setAvailableLoyaltyPoints(Number(json.data.loyaltyPoints || 0));
-            // Auto-select default address
-            const defaultAddr = json.data.savedAddresses.find(
-              (a: any) => a.isDefault,
-            );
-            if (defaultAddr) {
-              handleAddressSelect(defaultAddr);
-            }
+          if (json?.success) {
+            setCouponDiscount(Number(json?.data?.discountAmount || 0));
+          } else {
+            setCouponDiscount(0);
+            localStorage.removeItem("appliedCoupon");
           }
         })
-        .catch((err) => console.error("Error fetching addresses:", err));
+        .catch(() => {
+          setCouponDiscount(0);
+          localStorage.removeItem("appliedCoupon");
+        });
     }
 
-    fetch(`${API_URL}/settings`)
+    fetch(`${API_URL}/settings`, {
+      headers: {
+        ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+      },
+    })
       .then((res) => res.json())
       .then((json) => {
         const data = json?.data || {};
@@ -226,6 +268,8 @@ const CheckoutForm = () => {
   }, []);
 
   const handleInputChange = (field: string, value: string) => {
+    // Lock email field only when logged in
+    if (field === "email" && currentCustomer?.token) return;
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Clear alerts when user starts typing (better UX)
@@ -475,9 +519,20 @@ const CheckoutForm = () => {
         const gatewayLabel =
           trimmedData.payment === "paypal" ? "PayPal" : "Stripe";
 
+        if (!currentCustomer?.token) {
+          toast.error("Please login to proceed with checkout.", {
+            autoClose: 4000,
+          });
+          router.push("/login");
+          return;
+        }
+
         const res = await fetch(`${API_URL}/payments/${paymentPath}`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${currentCustomer.token}`,
+          },
           body: JSON.stringify({
             customer: {
               name: trimmedData.name,
@@ -671,10 +726,15 @@ const CheckoutForm = () => {
                   <input
                     id="email"
                     name="email"
-                    className="peer w-full h-14 px-4 pt-6 pb-2 bg-white border-2 border-gray-200 rounded-xl text-gray-900 placeholder-transparent focus:border-zPink focus:ring-0 focus:outline-none transition-all duration-300 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`peer w-full h-14 px-4 pt-6 pb-2 border-2 border-gray-200 rounded-xl placeholder-transparent focus:outline-none disabled:opacity-50 ${
+                      currentCustomer?.token
+                        ? "bg-gray-100 text-gray-600 cursor-not-allowed"
+                        : "bg-white text-gray-900 focus:border-zPink focus:ring-0 transition-all duration-300 hover:border-gray-300"
+                    }`}
                     placeholder="Email Address"
                     type="email"
                     value={formData.email}
+                    readOnly={!!currentCustomer?.token}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     onFocus={() => handleFocus("email")}
                     onBlur={() => handleBlur("email")}
@@ -931,8 +991,8 @@ const CheckoutForm = () => {
               <div className="w-16 h-1 bg-zPink rounded-full mt-2"></div>
             </div>
 
-            <div className="space-y-4 mb-8">
-              <div className="flex items-center justify-between py-4 border-b border-gray-100">
+            <div className="mb-8">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100">
                 <span className="text-lg font-medium text-gray-700">
                   Cart Subtotal
                 </span>
@@ -947,22 +1007,27 @@ const CheckoutForm = () => {
                 <span className="text-lg font-bold text-gray-900">$10.00</span>
               </div>
               <div className="py-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center flex-col gap-2">
                   <input
                     type="text"
                     value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    onChange={(e) =>
+                      setCouponCode(e.target.value.toUpperCase())
+                    }
                     placeholder="Coupon code"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm w-full"
                   />
                   <button
                     type="button"
-                    className="px-3 py-2 rounded-lg bg-gray-900 text-white text-sm"
+                    className="px-3 py-2 rounded-lg bg-gray-900 text-white text-sm w-full"
                     onClick={async () => {
                       if (!couponCode.trim()) return setCouponDiscount(0);
                       const res = await fetch(`${API_URL}/coupons/validate`, {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers: {
+                          "Content-Type": "application/json",
+                          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+                        },
                         body: JSON.stringify({
                           code: couponCode.trim(),
                           subtotal: Number(totalCartPrice || 0),
@@ -970,7 +1035,9 @@ const CheckoutForm = () => {
                       });
                       const json = await res.json().catch(() => ({}));
                       if (res.ok && json?.success) {
-                        setCouponDiscount(Number(json?.data?.discountAmount || 0));
+                        setCouponDiscount(
+                          Number(json?.data?.discountAmount || 0),
+                        );
                         toast.success("Coupon applied");
                       } else {
                         setCouponDiscount(0);
@@ -1010,13 +1077,16 @@ const CheckoutForm = () => {
                   className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg text-sm"
                 />
                 <div className="text-xs text-gray-500 mt-1">
-                  Minimum redeemable: {loyaltyConfig.minimumPointsToRedeem} points
+                  Minimum redeemable: {loyaltyConfig.minimumPointsToRedeem}{" "}
+                  points
                 </div>
               </div>
               {couponDiscount > 0 && (
                 <div className="flex items-center justify-between py-2 text-green-700">
                   <span className="font-medium">Coupon Discount</span>
-                  <span className="font-bold">-${couponDiscount.toFixed(2)}</span>
+                  <span className="font-bold">
+                    -${couponDiscount.toFixed(2)}
+                  </span>
                 </div>
               )}
               {loyaltyPointsToRedeem > 0 && (
@@ -1039,7 +1109,8 @@ const CheckoutForm = () => {
                     Number(totalCartPrice || 0) +
                     10 -
                     couponDiscount -
-                    loyaltyPointsToRedeem * Number(loyaltyConfig.loyaltyPointValue || 1)
+                    loyaltyPointsToRedeem *
+                      Number(loyaltyConfig.loyaltyPointValue || 1)
                   ).toFixed(2)}
                 </span>
               </div>

@@ -35,6 +35,7 @@ const TestimonySection = ({
                 height={22}
                 src="/assets/img/fire.png"
                 alt="fire"
+                className="w-3.5 h-auto"
               />
               <h6 className="ar-subtitle">{subtitle}</h6>
             </div>

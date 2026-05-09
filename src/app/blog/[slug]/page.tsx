@@ -57,20 +57,21 @@ export default async function Home({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
   const { slug } = await params;
   const blogInfo = await getBlogByLink(slug).catch(() => null);
 
-  const search = getParam(searchParams, "search") || "";
-  const category = getParam(searchParams, "category") || "";
-  const tagsParam = getParam(searchParams, "tags") || "";
+  const sp = await searchParams;
+  const search = getParam(sp, "search") || "";
+  const category = getParam(sp, "category") || "";
+  const tagsParam = getParam(sp, "tags") || "";
   const tagsSelected = tagsParam
     .split(",")
     .map((t) => t.trim())
     .filter(Boolean);
-  const page = parseInt(getParam(searchParams, "page") || "1") || 1;
-  const sort = getParam(searchParams, "sort") || "date-desc";
+  const page = parseInt(getParam(sp, "page") || "1") || 1;
+  const sort = getParam(sp, "sort") || "date-desc";
 
   const hasActiveFilters = !!(search || category || tagsSelected.length > 0);
 

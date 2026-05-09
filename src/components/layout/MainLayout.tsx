@@ -8,6 +8,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { API_URL } from "@/lib/api";
 
+const TENANT_ID =
+  process.env.NEXT_PUBLIC_TENANT_ID ||
+  process.env.NEXT_PUBLIC_TENANT_SLUG ||
+  "";
+
 const InstagramSection = dynamic(
   () => import("@/components/social/InstagramSection"),
   { ssr: false },
@@ -90,10 +95,11 @@ const MainLayout = ({ children, header, insta, footer }: Props) => {
 
     const provider = searchParams?.get("provider") || "stripe";
     const orderId = searchParams?.get("orderId") || "";
+    const orderNumber = searchParams?.get("orderNumber") || "";
     const sessionId = searchParams?.get("session_id") || "";
     const paypalToken = searchParams?.get("token") || "";
-    const key = `${provider}:${checkout}:${orderId}:${sessionId}:${paypalToken}`;
-    if (!orderId) return;
+    const key = `${provider}:${checkout}:${orderId}:${orderNumber}:${sessionId}:${paypalToken}`;
+    if (!orderId && !orderNumber) return;
     if (lastHandledRef.current === key) return;
     lastHandledRef.current = key;
 
@@ -107,8 +113,11 @@ const MainLayout = ({ children, header, insta, footer }: Props) => {
 
           await fetch(cancelEndpoint, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderId }),
+            headers: {
+              "Content-Type": "application/json",
+              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+            },
+            body: JSON.stringify({ orderId, orderNumber }),
             cache: "no-store",
           }).catch(() => null);
           toast.error("Payment was cancelled.");
@@ -123,8 +132,13 @@ const MainLayout = ({ children, header, insta, footer }: Props) => {
           const res = await fetch(
             `${API_URL}/payments/paypal/verify?orderId=${encodeURIComponent(
               orderId,
-            )}&token=${encodeURIComponent(paypalToken)}&checkout=${encodeURIComponent(checkout)}`,
-            { cache: "no-store" },
+            )}&orderNumber=${encodeURIComponent(orderNumber)}&token=${encodeURIComponent(paypalToken)}&checkout=${encodeURIComponent(checkout)}`,
+            {
+              cache: "no-store",
+              headers: {
+                ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+              },
+            },
           );
           const json = await res.json().catch(() => ({}));
           if (!res.ok || json?.success === false) {
@@ -134,6 +148,7 @@ const MainLayout = ({ children, header, insta, footer }: Props) => {
           const paymentStatus = json?.data?.paymentStatus as string | undefined;
           if (paymentStatus === "paid") {
             clearCart();
+            localStorage.removeItem("appliedCoupon");
             toast.success("Payment successful! Order placed.");
           } else {
             toast.error("Payment was not completed.");
@@ -149,8 +164,13 @@ const MainLayout = ({ children, header, insta, footer }: Props) => {
         const res = await fetch(
           `${API_URL}/payments/stripe/verify?orderId=${encodeURIComponent(
             orderId,
-          )}&session_id=${encodeURIComponent(sessionId)}&checkout=${encodeURIComponent(checkout)}`,
-          { cache: "no-store" },
+          )}&orderNumber=${encodeURIComponent(orderNumber)}&session_id=${encodeURIComponent(sessionId)}&checkout=${encodeURIComponent(checkout)}`,
+          {
+            cache: "no-store",
+            headers: {
+              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+            },
+          },
         );
         const json = await res.json().catch(() => ({}));
         if (!res.ok || json?.success === false) {
@@ -160,6 +180,7 @@ const MainLayout = ({ children, header, insta, footer }: Props) => {
         const paymentStatus = json?.data?.paymentStatus as string | undefined;
         if (paymentStatus === "paid") {
           clearCart();
+          localStorage.removeItem("appliedCoupon");
           toast.success("Payment successful! Order placed.");
         } else {
           toast.error("Payment was not completed.");

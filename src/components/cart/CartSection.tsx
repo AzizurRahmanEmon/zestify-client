@@ -1,19 +1,34 @@
 "use client";
 import Image from "next/image";
-import { useCustomContext } from "@/context/context";
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import { useCustomContext } from "@/context/context";
+import { getCurrentCustomer } from "@/lib/auth";
 
 const CartSection = () => {
+  const router = useRouter();
   const { cartList, updateQuantity, deleteItem } = useCustomContext();
   const formatPrice = (value: number) => value.toFixed(2);
 
-  // Calculate total
-  const calculateTotal = () => {
-    return cartList
-      .reduce((total, product) => {
-        return total + product.price * (product.quantity || 1);
-      }, 0)
-      .toFixed(2);
+  const [couponDiscount, setCouponDiscount] = useState(0);
+
+  const subtotal = cartList.reduce(
+    (total, product) => total + product.price * (product.quantity || 1),
+    0,
+  );
+
+  const handleCheckout = () => {
+    const customer = getCurrentCustomer() as any;
+    if (!customer?.token) {
+      toast.error("Please login to proceed with checkout.", {
+        autoClose: 4000,
+      });
+      router.push("/login");
+      return;
+    }
+    router.push("/checkout");
   };
 
   return (
@@ -219,37 +234,34 @@ const CartSection = () => {
             </div>
 
             {/* Cart Summary */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 lg:p-8 mb-8">
-              <div className="flex justify-between items-center text-2xl font-bold">
+            <div className="bg-white rounded-2xl shadow-lg p-6 lg:p-8 mb-8 space-y-2">
+              <div className="flex justify-between items-center text-lg">
+                <span className="text-gray-600">Subtotal:</span>
+                <span className="text-gray-900 font-semibold">
+                  ${formatPrice(subtotal)}
+                </span>
+              </div>
+              {couponDiscount > 0 && (
+                <div className="flex justify-between items-center text-lg text-green-700">
+                  <span className="font-medium">Coupon Discount:</span>
+                  <span className="font-bold">
+                    -${formatPrice(couponDiscount)}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between items-center text-2xl font-bold pt-2 border-t border-gray-100">
                 <span className="text-gray-900">Total:</span>
-                <span className="text-zPink">${calculateTotal()}</span>
+                <span className="text-zPink">
+                  ${formatPrice(Math.max(0, subtotal - couponDiscount))}
+                </span>
               </div>
             </div>
 
             {/* Bottom Actions */}
-            <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
-              {/* Coupon Form */}
-              <div className="w-full lg:w-auto">
-                <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col sm:flex-row gap-4 items-center">
-                  <input
-                    type="text"
-                    name="coupon"
-                    placeholder="Enter Coupon Code"
-                    id="coupon"
-                    className="flex-1 px-6 py-4 border-2 border-gray-200 rounded-xl focus:border-zPink focus:outline-none transition-colors duration-200 min-w-0 sm:min-w-75"
-                  />
-                  <button className="ar-btn group whitespace-nowrap">
-                    <span className="relative z-10 transition-all duration-500 group-hover:text-black">
-                      Apply Coupon
-                    </span>
-                    <span className="absolute top-0 left-0 w-0 h-full bg-white transition-all duration-500 group-hover:w-full z-0"></span>
-                  </button>
-                </div>
-              </div>
-
+            <div className="flex flex-col lg:flex-row justify-end items-center gap-6">
               {/* Checkout Button */}
               <div className="w-full lg:w-auto flex justify-center lg:justify-end">
-                <Link href="/checkout" className="ar-btn group gap-3">
+                <button onClick={handleCheckout} className="ar-btn group gap-3">
                   <span className="relative z-10 transition-all duration-500 group-hover:text-black">
                     Proceed to Checkout
                   </span>
@@ -261,7 +273,7 @@ const CartSection = () => {
                     className="group-hover:invert z-10"
                   />
                   <span className="absolute top-0 left-0 w-0 h-full bg-white transition-all duration-500 group-hover:w-full z-0"></span>
-                </Link>
+                </button>
               </div>
             </div>
           </>

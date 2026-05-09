@@ -74,7 +74,7 @@ const CompanySlider = ({ style, partners }: Props) => {
               height={item.height}
               src={item.icon}
               alt="img"
-              className="h-20 object-cover"
+              className="h-20 w-auto object-cover"
             />
           </div>
         </SwiperSlide>

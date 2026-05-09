@@ -50,7 +50,7 @@ const PreviewModal = ({ isPreviewModalOpen, closePreviewModal }: Props) => {
                 alt={previewProduct.name}
                 width={300}
                 height={300}
-                className="w-64 h-64 object-cover rounded-xl shadow-md"
+                className="w-64 h-auto aspect-square object-cover rounded-xl shadow-md"
               />
             </div>
 

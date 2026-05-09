@@ -461,12 +461,13 @@ const UserDashboard = () => {
                       key={idx}
                       className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl"
                     >
-                      <div className="w-16 h-16 bg-white rounded-lg shrink-0 relative overflow-hidden">
+                      <div className="w-16 h-16 bg-white rounded-lg shrink-0 overflow-hidden">
                         <Image
                           src={item.product?.image || "/assets/img/dish-1.png"}
                           alt={item.name}
-                          fill
-                          className="object-cover"
+                          width={64}
+                          height={64}
+                          className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="flex-1">
@@ -1028,12 +1029,13 @@ const UserDashboard = () => {
                       key={item._id}
                       className="bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 group flex flex-col"
                     >
-                      <div className="h-64 bg-gray-200 relative overflow-hidden">
+                      <div className="h-64 bg-gray-200 overflow-hidden">
                         <Image
                           src={item.image || "/assets/img/dish-1.png"}
                           alt={item.name}
-                          fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          width={400}
+                          height={256}
+                          className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                       </div>
                       <div className="p-5 flex-1 flex flex-col">

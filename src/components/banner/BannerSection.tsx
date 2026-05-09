@@ -24,8 +24,9 @@ const BannerSection = ({
     <section className="relative overflow-hidden">
       <Image
         alt="Delicious food hero background"
-        className="object-cover"
-        fill
+        className="object-cover absolute inset-0 w-full h-full"
+        width={1920}
+        height={1080}
         fetchPriority="high"
         priority
         sizes="100vw"
@@ -42,6 +43,7 @@ const BannerSection = ({
                 width="14"
                 height="22"
                 src="/assets/img/fire.png"
+                className="w-3.5 h-auto"
               />
             </span>
             <h6 className="ar-subtitle text-white text-base md:text-lg font-semibold tracking-wider uppercase">

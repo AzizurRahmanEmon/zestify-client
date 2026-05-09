@@ -40,7 +40,10 @@ const ProductDetailSection = ({
   }, [initialReviews]);
 
   const refreshReviews = useCallback(async () => {
-    const latest = await getProductReviews(product.slug, { page: 1, limit: 20 });
+    const latest = await getProductReviews(product.slug, {
+      page: 1,
+      limit: 20,
+    });
     setReviewsData(latest);
   }, [product.slug]);
 

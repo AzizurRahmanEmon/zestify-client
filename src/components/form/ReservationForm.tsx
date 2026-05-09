@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { toast } from "react-toastify";
 import { API_URL } from "@/lib/api";
+import { getCurrentCustomer } from "@/lib/auth";
 import DatePicker from "./DatePicker";
 
 const TENANT_ID =
@@ -35,6 +37,35 @@ const ReservationForm = () => {
   >([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
+  // Auto-fill from customer profile if logged in; do NOT redirect on mount
+  useEffect(() => {
+    const customer = getCurrentCustomer() as any;
+    if (!customer?.token) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      name: customer.name || prev.name,
+      email: customer.email || prev.email,
+      phone: customer.phone || prev.phone,
+    }));
+
+    fetch(`${API_URL}/customers/me`, {
+      headers: { Authorization: `Bearer ${customer.token}` },
+      cache: "no-store",
+    })
+      .then((r) => r.json())
+      .then((json) => {
+        const data = json?.data ?? {};
+        setFormData((prev) => ({
+          ...prev,
+          name: data.name || prev.name,
+          email: data.email || prev.email,
+          phone: data.phone || prev.phone,
+        }));
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (alert) {
       const timer = setTimeout(() => {
@@ -62,6 +93,8 @@ const ReservationForm = () => {
 
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
+    // Lock email field only when logged in
+    if (name === "email" && (getCurrentCustomer() as any)?.token) return;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -222,11 +255,27 @@ const ReservationForm = () => {
 
     try {
       const guestCount = parseInt(trimmedData.guests.replace("+", "")) || 1;
+      const customer = getCurrentCustomer() as any;
+      if (!customer?.token) {
+        toast.error("Please login to make a reservation.", { autoClose: 4000 });
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          date: "",
+          time: "",
+          guests: "",
+          message: "",
+        });
+        return;
+      }
+
       const res = await fetch(`${API_URL}/reservations`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+          Authorization: `Bearer ${customer.token}`,
         },
         cache: "no-store",
         body: JSON.stringify({
@@ -326,9 +375,19 @@ const ReservationForm = () => {
           id="email"
           value={formData.email}
           onChange={handleInputChange}
+          readOnly={!!(getCurrentCustomer() as any)?.token}
           disabled={isSubmitting}
-          className="w-full px-6 py-4 bg-gray-50/50 border border-gray-200 rounded-2xl text-gray-900 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all duration-300 peer disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`w-full px-6 py-4 border border-gray-200 rounded-2xl placeholder-transparent focus:outline-none peer disabled:opacity-50 ${
+            (getCurrentCustomer() as any)?.token
+              ? "bg-gray-100 text-gray-600 focus:ring-0 cursor-not-allowed"
+              : "bg-gray-50/50 text-gray-900 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all duration-300"
+          }`}
           placeholder="Email Address"
+          title={
+            (getCurrentCustomer() as any)?.token
+              ? "Your registered email (cannot be changed)"
+              : "Enter your email address"
+          }
         />
         <label
           htmlFor="email"

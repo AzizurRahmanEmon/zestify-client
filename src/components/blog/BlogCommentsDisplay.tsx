@@ -1,8 +1,15 @@
 "use client";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { API_URL } from "@/lib/api";
+import { getCurrentCustomer } from "@/lib/auth";
 import { toast } from "react-toastify";
+
+const TENANT_ID =
+  process.env.NEXT_PUBLIC_TENANT_ID ||
+  process.env.NEXT_PUBLIC_TENANT_SLUG ||
+  "";
 
 type ApiComment = {
   _id: string;
@@ -43,6 +50,29 @@ const BlogCommentsDisplay = ({ blogId, refreshKey = 0 }: Props) => {
     comment: "",
   });
   const [replySubmitting, setReplySubmitting] = useState(false);
+  const [currentCustomer, setCurrentCustomer] = useState<any>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+
+  useEffect(() => {
+    const read = () => {
+      const customer = getCurrentCustomer();
+      setCurrentCustomer(customer);
+      if (customer) {
+        setReplyForm((prev) => ({
+          ...prev,
+          name: customer.name || "",
+          email: customer.email || "",
+        }));
+      }
+    };
+    read();
+    window.addEventListener("auth:changed", read);
+    return () => window.removeEventListener("auth:changed", read);
+  }, []);
 
   const likedStorageKey = useMemo(() => `likedComments:${blogId}`, [blogId]);
 
@@ -115,7 +145,14 @@ const BlogCommentsDisplay = ({ blogId, refreshKey = 0 }: Props) => {
       const url = `${API_URL}/blogs/${encodeURIComponent(
         blogId,
       )}/comments?page=1&limit=50&sort=${encodeURIComponent(sortBy)}`;
-      const res = await fetch(url, { cache: "no-store" });
+      const token = (getCurrentCustomer() as any)?.token;
+      const res = await fetch(url, {
+        cache: "no-store",
+        headers: {
+          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || json?.success === false) {
         throw new Error(json?.message || "Failed to load comments");
@@ -125,7 +162,38 @@ const BlogCommentsDisplay = ({ blogId, refreshKey = 0 }: Props) => {
       setRepliesByCommentId({});
       setExpandedReplies(new Set());
       setReplyingTo(null);
-      setReplyForm({ name: "", email: "", comment: "" });
+
+      // Auto-load and expand replies
+      if (data.length > 0) {
+        const allReplies: Record<string, ApiComment[]> = {};
+        const expanded = new Set<string>();
+        for (const comment of data) {
+          try {
+            const replyUrl = `${API_URL}/blogs/${encodeURIComponent(
+              blogId,
+            )}/comments/${encodeURIComponent(comment._id)}/replies`;
+            const replyRes = await fetch(replyUrl, {
+              cache: "no-store",
+              headers: {
+                ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+              },
+            });
+            const replyJson = await replyRes.json().catch(() => ({}));
+            const replies = Array.isArray(replyJson?.data)
+              ? (replyJson.data as ApiComment[])
+              : [];
+            if (replies.length > 0) {
+              allReplies[comment._id] = replies;
+              expanded.add(comment._id);
+            }
+          } catch {
+            // ignore per-comment errors
+          }
+        }
+        setRepliesByCommentId(allReplies);
+        setExpandedReplies(expanded);
+      }
     } catch (err: unknown) {
       setComments([]);
       setRepliesByCommentId({});
@@ -146,7 +214,14 @@ const BlogCommentsDisplay = ({ blogId, refreshKey = 0 }: Props) => {
       const url = `${API_URL}/blogs/${encodeURIComponent(
         blogId,
       )}/comments/${encodeURIComponent(commentId)}/replies`;
-      const res = await fetch(url, { cache: "no-store" });
+      const token = (getCurrentCustomer() as any)?.token;
+      const res = await fetch(url, {
+        cache: "no-store",
+        headers: {
+          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || json?.success === false) {
         throw new Error(json?.message || "Failed to load replies");
@@ -183,11 +258,19 @@ const BlogCommentsDisplay = ({ blogId, refreshKey = 0 }: Props) => {
     async (commentId: string) => {
       if (likedComments.has(commentId)) return;
       try {
+        const token = (getCurrentCustomer() as any)?.token;
         const res = await fetch(
           `${API_URL}/blogs/${encodeURIComponent(
             blogId,
           )}/comments/${encodeURIComponent(commentId)}/like`,
-          { method: "PATCH", cache: "no-store" },
+          {
+            method: "PATCH",
+            cache: "no-store",
+            headers: {
+              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          },
         );
         const json = await res.json().catch(() => ({}));
         if (!res.ok || json?.success === false) {
@@ -238,11 +321,16 @@ const BlogCommentsDisplay = ({ blogId, refreshKey = 0 }: Props) => {
       }
       try {
         setReplySubmitting(true);
+        const token = (getCurrentCustomer() as any)?.token;
         const res = await fetch(
           `${API_URL}/blogs/${encodeURIComponent(blogId)}/comments`,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
             body: JSON.stringify(payload),
             cache: "no-store",
           },
@@ -257,7 +345,11 @@ const BlogCommentsDisplay = ({ blogId, refreshKey = 0 }: Props) => {
         }
         await loadReplies(commentId);
         setExpandedReplies((prev) => new Set(prev).add(commentId));
-        setReplyForm({ name: "", email: "", comment: "" });
+        setReplyForm({
+          name: currentCustomer?.name || "",
+          email: currentCustomer?.email || "",
+          comment: "",
+        });
         setReplyingTo(null);
         toast.success("Reply posted successfully");
       } catch (err: unknown) {
@@ -274,6 +366,143 @@ const BlogCommentsDisplay = ({ blogId, refreshKey = 0 }: Props) => {
   const handleCancelReply = useCallback(() => {
     setReplyForm({ name: "", email: "", comment: "" });
     setReplyingTo(null);
+  }, []);
+
+  const isCommentOwner = useCallback(
+    (comment: ApiComment) => {
+      if (!currentCustomer) return false;
+      return !!currentCustomer.email && comment.email === currentCustomer.email;
+    },
+    [currentCustomer],
+  );
+
+  const handleEdit = useCallback((comment: ApiComment) => {
+    setEditingCommentId(comment._id);
+    setEditText(comment.comment);
+  }, []);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingCommentId(null);
+    setEditText("");
+  }, []);
+
+  const handleUpdateSubmit = useCallback(
+    async (commentId: string, e: React.FormEvent) => {
+      e.preventDefault();
+      if (editSubmitting) return;
+      const trimmed = editText.trim();
+      if (!trimmed) {
+        toast.error("Comment cannot be empty");
+        return;
+      }
+      if (trimmed.length < 10) {
+        toast.error("Comment must be at least 10 characters long");
+        return;
+      }
+      try {
+        setEditSubmitting(true);
+        const token = (getCurrentCustomer() as any)?.token;
+        const res = await fetch(
+          `${API_URL}/blogs/${encodeURIComponent(
+            blogId,
+          )}/comments/${encodeURIComponent(commentId)}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ comment: trimmed }),
+            cache: "no-store",
+          },
+        );
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || json?.success === false) {
+          throw new Error(json?.message || "Failed to update comment");
+        }
+        setComments((prev) =>
+          prev.map((c) =>
+            c._id === commentId ? { ...c, comment: trimmed } : c,
+          ),
+        );
+        setRepliesByCommentId((prev) => {
+          const next = { ...prev };
+          for (const key of Object.keys(next)) {
+            next[key] = next[key].map((r) =>
+              r._id === commentId ? { ...r, comment: trimmed } : r,
+            );
+          }
+          return next;
+        });
+        setEditingCommentId(null);
+        setEditText("");
+        toast.success("Comment updated successfully");
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to update comment";
+        toast.error(message);
+      } finally {
+        setEditSubmitting(false);
+      }
+    },
+    [editText, blogId, editSubmitting],
+  );
+
+  const handleDeleteComment = useCallback(async (commentId: string) => {
+    setDeleteConfirmId(commentId);
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    const commentId = deleteConfirmId;
+    if (!commentId) return;
+    try {
+      setDeleteSubmitting(true);
+      const token = (getCurrentCustomer() as any)?.token;
+      const res = await fetch(
+        `${API_URL}/blogs/${encodeURIComponent(
+          blogId,
+        )}/comments/${encodeURIComponent(commentId)}/owner`,
+        {
+          method: "DELETE",
+          headers: {
+            ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          cache: "no-store",
+        },
+      );
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json?.success === false) {
+        throw new Error(json?.message || "Failed to delete comment");
+      }
+      setComments((prev) => prev.filter((c) => c._id !== commentId));
+      setRepliesByCommentId((prev) => {
+        const next: Record<string, ApiComment[]> = {};
+        for (const key of Object.keys(prev)) {
+          next[key] = prev[key].filter((r) => r._id !== commentId);
+        }
+        return next;
+      });
+      setExpandedReplies((prev) => {
+        const next = new Set(prev);
+        next.delete(commentId);
+        return next;
+      });
+      setDeleteConfirmId(null);
+      toast.success("Comment deleted successfully");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete comment";
+      toast.error(message);
+    } finally {
+      setDeleteSubmitting(false);
+    }
+  }, [blogId, deleteConfirmId]);
+
+  const cancelDelete = useCallback(() => {
+    setDeleteConfirmId(null);
+    setDeleteSubmitting(false);
   }, []);
 
   if (loading) {
@@ -414,9 +643,41 @@ const BlogCommentsDisplay = ({ blogId, refreshKey = 0 }: Props) => {
                       {formatDate(comment.createdAt)}
                     </time>
                   </div>
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {comment.comment}
-                  </p>
+                  {editingCommentId === comment._id ? (
+                    <form
+                      onSubmit={(e) => handleUpdateSubmit(comment._id, e)}
+                      className="space-y-2"
+                    >
+                      <textarea
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 resize-none"
+                        required
+                        minLength={10}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="submit"
+                          disabled={editSubmitting}
+                          className="px-3 py-1.5 bg-pink-600 text-white text-xs font-medium rounded-lg hover:bg-pink-700 transition-colors duration-200"
+                        >
+                          {editSubmitting ? "Saving..." : "Save"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCancelEdit}
+                          className="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      {comment.comment}
+                    </p>
+                  )}
                 </div>
 
                 {/* Action buttons */}
@@ -450,29 +711,74 @@ const BlogCommentsDisplay = ({ blogId, refreshKey = 0 }: Props) => {
                     Like
                   </button>
 
-                  <button
-                    onClick={() =>
-                      setReplyingTo(
-                        replyingTo === comment._id ? null : comment._id,
-                      )
-                    }
-                    className="text-sm text-gray-600 hover:text-pink-600 transition-colors duration-200 flex items-center gap-1"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                  {currentCustomer?.token && (
+                    <button
+                      onClick={() =>
+                        setReplyingTo(
+                          replyingTo === comment._id ? null : comment._id,
+                        )
+                      }
+                      className="text-sm text-gray-600 hover:text-pink-600 transition-colors duration-200 flex items-center gap-1"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
-                      />
-                    </svg>
-                    Reply
-                  </button>
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                        />
+                      </svg>
+                      Reply
+                    </button>
+                  )}
+
+                  {isCommentOwner(comment) && (
+                    <>
+                      <button
+                        onClick={() => handleEdit(comment)}
+                        className="text-sm text-gray-600 hover:text-blue-600 transition-colors duration-200 flex items-center gap-1"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                          />
+                        </svg>
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteComment(comment._id)}
+                        className="text-sm text-gray-600 hover:text-red-600 transition-colors duration-200 flex items-center gap-1"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                        Delete
+                      </button>
+                    </>
+                  )}
 
                   <button
                     onClick={() => toggleReplies(comment._id)}
@@ -490,63 +796,91 @@ const BlogCommentsDisplay = ({ blogId, refreshKey = 0 }: Props) => {
                     <h5 className="text-sm font-semibold text-gray-900 mb-3">
                       Reply to {comment.name}
                     </h5>
-                    <form
-                      onSubmit={(e) => handleReplySubmit(comment._id, e)}
-                      className="space-y-3"
-                    >
-                      <input
-                        type="text"
-                        placeholder="Your name"
-                        value={replyForm.name}
-                        onChange={(e) =>
-                          setReplyForm({ ...replyForm, name: e.target.value })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500"
-                        minLength={2}
-                        required
-                      />
-                      <input
-                        type="email"
-                        placeholder="Your email"
-                        value={replyForm.email}
-                        onChange={(e) =>
-                          setReplyForm({ ...replyForm, email: e.target.value })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500"
-                        required
-                      />
-                      <textarea
-                        placeholder="Your reply..."
-                        value={replyForm.comment}
-                        onChange={(e) =>
-                          setReplyForm({
-                            ...replyForm,
-                            comment: e.target.value,
-                          })
-                        }
-                        rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 resize-none"
-                        minLength={10}
-                        required
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          type="submit"
-                          disabled={replySubmitting}
-                          className="px-4 py-2 bg-pink-600 text-white text-sm font-medium rounded-lg hover:bg-pink-700 transition-colors duration-200"
+                    {!currentCustomer?.token ? (
+                      <div className="p-4 bg-gray-50 rounded-lg text-center space-y-2">
+                        <p className="text-gray-700 text-sm font-medium">
+                          Please log in to reply.
+                        </p>
+                        <Link
+                          href="/login"
+                          className="inline-flex items-center px-4 py-2 bg-pink-600 text-white text-sm font-medium rounded-lg hover:bg-pink-700 transition-colors duration-200"
                         >
-                          {replySubmitting ? "Posting..." : "Post Reply"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleCancelReply}
-                          disabled={replySubmitting}
-                          className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors duration-200"
-                        >
-                          Cancel
-                        </button>
+                          Log In
+                        </Link>
                       </div>
-                    </form>
+                    ) : (
+                      <form
+                        onSubmit={(e) => handleReplySubmit(comment._id, e)}
+                        className="space-y-3"
+                      >
+                        <input
+                          type="text"
+                          placeholder="Your name"
+                          value={replyForm.name}
+                          onChange={(e) =>
+                            currentCustomer?.token
+                              ? undefined
+                              : setReplyForm({
+                                  ...replyForm,
+                                  name: e.target.value,
+                                })
+                          }
+                          readOnly={!!currentCustomer?.token}
+                          disabled={replySubmitting || !!currentCustomer?.token}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                          minLength={2}
+                          required
+                        />
+                        <input
+                          type="email"
+                          placeholder="Your email"
+                          value={replyForm.email}
+                          onChange={(e) =>
+                            currentCustomer?.token
+                              ? undefined
+                              : setReplyForm({
+                                  ...replyForm,
+                                  email: e.target.value,
+                                })
+                          }
+                          readOnly={!!currentCustomer?.token}
+                          disabled={replySubmitting || !!currentCustomer?.token}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                          required
+                        />
+                        <textarea
+                          placeholder="Your reply..."
+                          value={replyForm.comment}
+                          onChange={(e) =>
+                            setReplyForm({
+                              ...replyForm,
+                              comment: e.target.value,
+                            })
+                          }
+                          rows={3}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 resize-none"
+                          minLength={10}
+                          required
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            type="submit"
+                            disabled={replySubmitting}
+                            className="px-4 py-2 bg-pink-600 text-white text-sm font-medium rounded-lg hover:bg-pink-700 transition-colors duration-200"
+                          >
+                            {replySubmitting ? "Posting..." : "Post Reply"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleCancelReply}
+                            disabled={replySubmitting}
+                            className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    )}
                   </div>
                 )}
 
@@ -579,17 +913,71 @@ const BlogCommentsDisplay = ({ blogId, refreshKey = 0 }: Props) => {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-semibold text-sm text-gray-900">
-                                {reply.name}
-                              </span>
-                              <time className="text-xs text-gray-500">
-                                {formatDate(reply.createdAt)}
-                              </time>
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-sm text-gray-900">
+                                  {reply.name}
+                                </span>
+                                <time className="text-xs text-gray-500">
+                                  {formatDate(reply.createdAt)}
+                                </time>
+                              </div>
+                              {isCommentOwner(reply) && (
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => handleEdit(reply)}
+                                    className="text-xs text-gray-500 hover:text-blue-600 transition-colors duration-200"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleDeleteComment(reply._id)
+                                    }
+                                    className="text-xs text-gray-500 hover:text-red-600 transition-colors duration-200"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              )}
                             </div>
-                            <p className="text-sm text-gray-700 leading-relaxed">
-                              {reply.comment}
-                            </p>
+                            {editingCommentId === reply._id ? (
+                              <form
+                                onSubmit={(e) =>
+                                  handleUpdateSubmit(reply._id, e)
+                                }
+                                className="space-y-2"
+                              >
+                                <textarea
+                                  value={editText}
+                                  onChange={(e) => setEditText(e.target.value)}
+                                  rows={2}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 resize-none"
+                                  required
+                                  minLength={10}
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    type="submit"
+                                    disabled={editSubmitting}
+                                    className="px-3 py-1.5 bg-pink-600 text-white text-xs font-medium rounded-lg hover:bg-pink-700 transition-colors duration-200"
+                                  >
+                                    {editSubmitting ? "Saving..." : "Save"}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={handleCancelEdit}
+                                    className="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </form>
+                            ) : (
+                              <p className="text-sm text-gray-700 leading-relaxed">
+                                {reply.comment}
+                              </p>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -612,6 +1000,54 @@ const BlogCommentsDisplay = ({ blogId, refreshKey = 0 }: Props) => {
           </article>
         ))}
       </div>
+
+      {/* Delete confirmation modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-1050 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 border border-gray-100">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                <svg
+                  className="w-5 h-5 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Delete Comment
+              </h3>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this comment? This action cannot
+              be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={cancelDelete}
+                disabled={deleteSubmitting}
+                className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors duration-200 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleteSubmitting}
+                className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors duration-200 disabled:opacity-50"
+              >
+                {deleteSubmitting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

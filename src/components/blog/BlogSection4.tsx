@@ -56,7 +56,7 @@ const BlogSection4 = ({
                           height={224}
                           src={post.img}
                           alt={post.title}
-                          className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-auto aspect-422/224 object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       </Link>
                       <div className="absolute top-4 left-4">
@@ -177,7 +177,11 @@ const BlogSection4 = ({
 
           {/* Sidebar */}
           <div className="lg:w-80 w-full">
-            <BlogSidebar categories={categories} tags={tags} latestPosts={latestPosts} />
+            <BlogSidebar
+              categories={categories}
+              tags={tags}
+              latestPosts={latestPosts}
+            />
           </div>
         </div>
       </div>

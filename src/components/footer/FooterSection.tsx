@@ -153,11 +153,11 @@ const FooterSection = ({
               <div className="mb-6">
                 <Link href="/" className="inline-block group/logo ">
                   <Image
-                    width={160}
-                    height={101}
+                    width={142}
+                    height={89}
                     src={logo}
                     alt="logo"
-                    className="w-32 md:w-40 group-hover/logo:scale-110 transition-transform duration-300 filter drop-shadow-lg"
+                    className="w-32 md:w-40 h-auto group-hover/logo:scale-110 transition-transform duration-300 filter drop-shadow-lg"
                   />
                 </Link>
               </div>

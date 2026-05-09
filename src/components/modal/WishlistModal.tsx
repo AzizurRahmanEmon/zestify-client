@@ -86,7 +86,7 @@ const WishlistModal = ({ isWishlistModalOpen, closeWishlistModal }: Props) => {
                           height={80}
                           src={product.image}
                           alt={product.name}
-                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg shadow-md"
+                          className="w-16 h-auto sm:w-20 aspect-square object-cover rounded-lg shadow-md"
                         />
                       </div>
 

@@ -1,13 +1,30 @@
 "use client";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import { useCustomContext } from "@/context/context";
+import { getCurrentCustomer } from "@/lib/auth";
 import Image from "next/image";
 interface Props {
   isCartModalOpen: boolean;
   closeCartModal: () => void;
 }
 const CartModal = ({ isCartModalOpen, closeCartModal }: Props) => {
+  const router = useRouter();
   const { cartList, updateQuantity, deleteItem } = useCustomContext();
   const formatPrice = (value: number) => value.toFixed(2);
+
+  const handleCheckout = () => {
+    const customer = getCurrentCustomer() as any;
+    if (!customer?.token) {
+      toast.error("Please login to proceed with checkout.", {
+        autoClose: 4000,
+      });
+      router.push("/login");
+      return;
+    }
+    router.push("/checkout");
+    closeCartModal();
+  };
 
   // Calculate total
   const calculateTotal = () => {
@@ -92,7 +109,7 @@ const CartModal = ({ isCartModalOpen, closeCartModal }: Props) => {
                           height={80}
                           src={product.image}
                           alt={product.name}
-                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg shadow-md"
+                          className="w-16 h-auto sm:w-20 aspect-square object-cover rounded-lg shadow-md"
                         />
                       </div>
 
@@ -176,12 +193,12 @@ const CartModal = ({ isCartModalOpen, closeCartModal }: Props) => {
                   >
                     View Full Cart
                   </a>
-                  <a
-                    href="/checkout"
+                  <button
+                    onClick={handleCheckout}
                     className="flex-1 bg-zPink text-white py-3 px-6 rounded-lg font-semibold text-center hover:bg-opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl"
                   >
                     Proceed to Checkout
-                  </a>
+                  </button>
                 </div>
               </div>
             </>

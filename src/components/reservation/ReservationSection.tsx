@@ -133,6 +133,7 @@ const ReservationSection = ({
                   height={22}
                   src="/assets/img/fire.png"
                   alt=""
+                  className="w-3.5 h-auto"
                 />
                 <h6 className="ar-subtitle text-white">{subtitle}</h6>
               </div>
@@ -166,6 +167,7 @@ const ReservationSection = ({
                         height={item.iconHeight}
                         src={item.icon}
                         alt=""
+                        className="w-auto h-auto"
                       />
                     </div>
                     <div className="text-white text-base">

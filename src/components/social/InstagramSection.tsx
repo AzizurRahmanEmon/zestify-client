@@ -25,9 +25,9 @@ const InstagramSection = ({
           <Image
             src={img}
             alt=""
-            className="h-40 md:h-56 lg:h-80 w-full object-cover object-center"
+            className="h-auto aspect-square w-full object-cover object-center"
             width={318}
-            height={320}
+            height={318}
           />
         </div>
       ))}

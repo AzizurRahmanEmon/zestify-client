@@ -36,6 +36,7 @@ const PopularProductSection = ({
                   height={22}
                   src="/assets/img/fire.png"
                   alt=""
+                  className="w-3.5 h-auto"
                 />
                 <h6 className="ar-subtitle">{subtitle}</h6>
               </div>
@@ -122,14 +123,14 @@ const PopularProductSection = ({
                           height={224}
                           src={item.image}
                           alt="product"
-                          className="m-auto w-56 group-hover:scale-110 group-hover:rotate-3 transition-all duration-700 ease-out filter group-hover:brightness-110 group-hover:drop-shadow-2xl"
+                          className="m-auto w-56 h-auto group-hover:scale-110 group-hover:rotate-3 transition-all duration-700 ease-out filter group-hover:brightness-110 group-hover:drop-shadow-2xl"
                         />
                         <Image
                           width={249}
                           height={23}
                           src="/assets/img/line.png"
                           alt="line"
-                          className="absolute -bottom-12.5 left-1/2 -translate-x-1/2 group-hover:scale-110 transition-all duration-500 delay-200"
+                          className="absolute w-62.25 h-auto -bottom-12.5 left-1/2 -translate-x-1/2 group-hover:scale-110 transition-all duration-500 delay-200"
                         />
                       </div>
 
@@ -138,14 +139,14 @@ const PopularProductSection = ({
                         height={65}
                         src="/assets/img/beans.png"
                         alt="beans"
-                        className="absolute right-0 top-7 z-3 group-hover:translate-x-2 group-hover:-translate-y-1 group-hover:rotate-12 transition-all duration-700 ease-out opacity-60 group-hover:opacity-100"
+                        className="absolute w-15.25 h-auto right-0 top-7 z-3 group-hover:translate-x-2 group-hover:-translate-y-1 group-hover:rotate-12 transition-all duration-700 ease-out opacity-60 group-hover:opacity-100"
                       />
                       <Image
                         width={250}
                         height={247}
                         src="/assets/img/round-bg.png"
                         alt="bg-shape"
-                        className="absolute top-12.5 left-1/2 -translate-x-1/2 z-2 group-hover:scale-105 group-hover:rotate-6 transition-all duration-1000 ease-out opacity-80 group-hover:opacity-100"
+                        className="absolute w-62.5 h-auto top-12.5 left-1/2 -translate-x-1/2 z-2 group-hover:scale-105 group-hover:rotate-6 transition-all duration-1000 ease-out opacity-80 group-hover:opacity-100"
                       />
 
                       <Link

@@ -132,7 +132,7 @@ const GallerySection = ({ variant }: Props) => {
                       height={8}
                       src="/assets/img/right-arrow.png"
                       alt="arrow"
-                      className="w-4 transition-transform duration-300 group-hover:translate-x-1"
+                      className="w-5 h-auto aspect-20/8 transition-transform duration-300 group-hover:translate-x-1"
                     />
                   </div>
                 </div>

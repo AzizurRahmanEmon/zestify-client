@@ -34,6 +34,7 @@ const BestSellingProductSection = ({
                 height={22}
                 src="/assets/img/fire.png"
                 alt="fire"
+                className="w-3.5 h-auto"
               />
               <h6 className="ar-subtitle">{subtitle}</h6>
             </div>
@@ -53,7 +54,7 @@ const BestSellingProductSection = ({
                       height={210}
                       src={dish.image}
                       alt="img"
-                      className="m-auto h-full w-56 transition-transform duration-500 group-hover:rotate-6"
+                      className="m-auto h-52.5 w-56 transition-transform duration-500 group-hover:rotate-6"
                     />
                   </div>
                   <div className="relative mt-10">
@@ -92,7 +93,7 @@ const BestSellingProductSection = ({
                       height={17}
                       src="/assets/img/scooter.png"
                       alt="icon"
-                      className="group-hover:invert z-10 transition-filter duration-500"
+                      className="group-hover:invert z-10 w-6.25 h-auto transition-filter duration-500"
                     />
                     <span className="relative z-10 transition-colors duration-500 group-hover:text-black">
                       Add To Cart

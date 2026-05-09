@@ -52,7 +52,7 @@ const HeaderSearchForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="relative w-70 group"
+      className="relative w-60 group"
       role="search"
       aria-label="Search"
     >
