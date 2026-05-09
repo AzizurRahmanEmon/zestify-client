@@ -9,7 +9,15 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "asset.cloudinary.com",
+      },
+      {
+        protocol: "https",
         hostname: "zestify-api-backend.vercel.app",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
       },
     ],
   },

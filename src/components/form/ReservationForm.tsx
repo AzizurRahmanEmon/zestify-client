@@ -3,6 +3,11 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { API_URL } from "@/lib/api";
 import DatePicker from "./DatePicker";
 
+const TENANT_ID =
+  process.env.NEXT_PUBLIC_TENANT_ID ||
+  process.env.NEXT_PUBLIC_TENANT_SLUG ||
+  "";
+
 // Constants
 const ALERT_DURATION = 4000;
 const SUBMISSION_DELAY = 2000;
@@ -88,6 +93,9 @@ const ReservationForm = () => {
           )}`,
           {
             cache: "no-store",
+            headers: {
+              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+            },
           },
         );
 
@@ -216,7 +224,10 @@ const ReservationForm = () => {
       const guestCount = parseInt(trimmedData.guests.replace("+", "")) || 1;
       const res = await fetch(`${API_URL}/reservations`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+        },
         cache: "no-store",
         body: JSON.stringify({
           name: trimmedData.name,

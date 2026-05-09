@@ -125,6 +125,14 @@ const CheckoutForm = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customerAddresses, setCustomerAddresses] = useState<any[]>([]);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [loyaltyPointsToRedeem, setLoyaltyPointsToRedeem] = useState(0);
+  const [availableLoyaltyPoints, setAvailableLoyaltyPoints] = useState(0);
+  const [loyaltyConfig, setLoyaltyConfig] = useState({
+    loyaltyPointValue: 1,
+    minimumPointsToRedeem: 10,
+  });
 
   // Effect to fetch customer addresses if logged in
   useEffect(() => {
@@ -148,6 +156,7 @@ const CheckoutForm = () => {
         .then((json) => {
           if (json.success && json.data.savedAddresses) {
             setCustomerAddresses(json.data.savedAddresses);
+            setAvailableLoyaltyPoints(Number(json.data.loyaltyPoints || 0));
             // Auto-select default address
             const defaultAddr = json.data.savedAddresses.find(
               (a: any) => a.isDefault,
@@ -159,6 +168,17 @@ const CheckoutForm = () => {
         })
         .catch((err) => console.error("Error fetching addresses:", err));
     }
+
+    fetch(`${API_URL}/settings`)
+      .then((res) => res.json())
+      .then((json) => {
+        const data = json?.data || {};
+        setLoyaltyConfig({
+          loyaltyPointValue: Number(data.loyaltyPointValue || 1),
+          minimumPointsToRedeem: Number(data.minimumPointsToRedeem || 10),
+        });
+      })
+      .catch(() => null);
   }, []);
 
   const handleAddressSelect = (addr: any) => {
@@ -440,7 +460,11 @@ const CheckoutForm = () => {
 
       const shippingFee = 10;
       const subtotal = Number(totalCartPrice) || 0;
-      const orderTotal = subtotal + shippingFee;
+      const loyaltyDiscount =
+        Math.max(0, Math.floor(loyaltyPointsToRedeem)) *
+        Number(loyaltyConfig.loyaltyPointValue || 1);
+      const orderTotal =
+        subtotal + shippingFee - Math.max(0, couponDiscount) - loyaltyDiscount;
 
       try {
         setIsSubmitting(true);
@@ -468,6 +492,8 @@ const CheckoutForm = () => {
             notes: trimmedData.notes,
             deliveryType: "delivery",
             deliveryFee: shippingFee,
+            couponCode,
+            loyaltyPointsToRedeem,
             subtotal,
             totalAmount: orderTotal,
             items: cartList.map((item) => ({
@@ -920,10 +946,101 @@ const CheckoutForm = () => {
                 </span>
                 <span className="text-lg font-bold text-gray-900">$10.00</span>
               </div>
+              <div className="py-4 border-b border-gray-100">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    placeholder="Coupon code"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  />
+                  <button
+                    type="button"
+                    className="px-3 py-2 rounded-lg bg-gray-900 text-white text-sm"
+                    onClick={async () => {
+                      if (!couponCode.trim()) return setCouponDiscount(0);
+                      const res = await fetch(`${API_URL}/coupons/validate`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          code: couponCode.trim(),
+                          subtotal: Number(totalCartPrice || 0),
+                        }),
+                      });
+                      const json = await res.json().catch(() => ({}));
+                      if (res.ok && json?.success) {
+                        setCouponDiscount(Number(json?.data?.discountAmount || 0));
+                        toast.success("Coupon applied");
+                      } else {
+                        setCouponDiscount(0);
+                        toast.error(json?.message || "Invalid coupon");
+                      }
+                    }}
+                  >
+                    Apply
+                  </button>
+                </div>
+                {couponDiscount > 0 && (
+                  <div className="text-sm text-green-700 mt-2">
+                    Coupon discount: -${couponDiscount.toFixed(2)}
+                  </div>
+                )}
+              </div>
+              <div className="py-4 border-b border-gray-100">
+                <label className="text-sm font-medium text-gray-700">
+                  Use loyalty points (available: {availableLoyaltyPoints})
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={availableLoyaltyPoints}
+                  value={loyaltyPointsToRedeem}
+                  onChange={(e) =>
+                    setLoyaltyPointsToRedeem(
+                      Math.max(
+                        0,
+                        Math.min(
+                          availableLoyaltyPoints,
+                          Number(e.target.value || 0),
+                        ),
+                      ),
+                    )
+                  }
+                  className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                />
+                <div className="text-xs text-gray-500 mt-1">
+                  Minimum redeemable: {loyaltyConfig.minimumPointsToRedeem} points
+                </div>
+              </div>
+              {couponDiscount > 0 && (
+                <div className="flex items-center justify-between py-2 text-green-700">
+                  <span className="font-medium">Coupon Discount</span>
+                  <span className="font-bold">-${couponDiscount.toFixed(2)}</span>
+                </div>
+              )}
+              {loyaltyPointsToRedeem > 0 && (
+                <div className="flex items-center justify-between py-2 text-green-700">
+                  <span className="font-medium">Loyalty Discount</span>
+                  <span className="font-bold">
+                    -
+                    {(
+                      loyaltyPointsToRedeem *
+                      Number(loyaltyConfig.loyaltyPointValue || 1)
+                    ).toFixed(2)}
+                  </span>
+                </div>
+              )}
               <div className="flex items-center justify-between py-4 text-xl">
                 <span className="font-bold text-gray-900">Order Total</span>
                 <span className="font-bold text-zPink">
-                  ${(Number(totalCartPrice || 0) + 10).toFixed(2)}
+                  $
+                  {(
+                    Number(totalCartPrice || 0) +
+                    10 -
+                    couponDiscount -
+                    loyaltyPointsToRedeem * Number(loyaltyConfig.loyaltyPointValue || 1)
+                  ).toFixed(2)}
                 </span>
               </div>
             </div>

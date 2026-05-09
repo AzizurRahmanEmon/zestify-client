@@ -10,6 +10,11 @@ import { API_URL } from "@/lib/api";
 const ALERT_DURATION = 4000;
 const SUBMISSION_DELAY = 2000;
 
+const TENANT_ID =
+  process.env.NEXT_PUBLIC_TENANT_ID ||
+  process.env.NEXT_PUBLIC_TENANT_SLUG ||
+  "";
+
 interface FormData {
   username: string;
   email: string;
@@ -224,7 +229,10 @@ const RegisterForm = () => {
       try {
         const res = await fetch(`${API_URL}/customers`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+          },
           body: JSON.stringify({
             name: trimmedData.username,
             email: trimmedData.email,

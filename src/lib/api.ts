@@ -22,11 +22,16 @@ export type { ApiResponse };
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${API_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  const tenantId =
+    process.env.NEXT_PUBLIC_TENANT_ID ||
+    process.env.NEXT_PUBLIC_TENANT_SLUG ||
+    "";
   const res = await fetch(url, {
     ...init,
     cache: "no-store",
     headers: {
       "Content-Type": "application/json",
+      ...(tenantId ? { "x-tenant-id": tenantId } : {}),
       ...(init?.headers || {}),
     },
   });
@@ -442,6 +447,9 @@ export type Settings = {
     twitter?: string;
     linkedin?: string;
   };
+  loyaltyPointsPerPurchaseAmount?: number;
+  loyaltyPointValue?: number;
+  minimumPointsToRedeem?: number;
 };
 export async function getSettings(): Promise<Settings> {
   const res = await request<{ success: boolean; data: Settings }>(`/settings`);

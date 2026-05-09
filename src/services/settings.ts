@@ -20,6 +20,9 @@ export type Settings = {
     twitter?: string;
     linkedin?: string;
   };
+  loyaltyPointsPerPurchaseAmount?: number;
+  loyaltyPointValue?: number;
+  minimumPointsToRedeem?: number;
 };
 
 export async function getSettings(): Promise<Settings> {

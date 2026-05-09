@@ -1,10 +1,15 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
+import { API_URL } from "@/lib/api";
 
 // Constants
 const ALERT_DURATION = 4000;
-const SUBMISSION_DELAY = 2000;
+
+const TENANT_ID =
+  process.env.NEXT_PUBLIC_TENANT_ID ||
+  process.env.NEXT_PUBLIC_TENANT_SLUG ||
+  "";
 
 const NewsletterForm2 = () => {
   const [email, setEmail] = useState("");
@@ -47,7 +52,7 @@ const NewsletterForm2 = () => {
   };
 
   const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
+    async (e: React.FormEvent) => {
       e.preventDefault();
 
       // Trim email value
@@ -76,27 +81,49 @@ const NewsletterForm2 = () => {
         return;
       }
 
-      // Simulate API request with a delay
+      // Call API
       setIsSubmitting(true);
-      setTimeout(() => {
-        // Log the submitted data as JSON
-        console.log(
-          "Submitted Newsletter Form Data:",
-          JSON.stringify({ email: trimmedEmail }, null, 2),
-        );
-
-        setIsSubmitting(false);
+      try {
+        const res = await fetch(`${API_URL}/newsletters/subscribe`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+          },
+          body: JSON.stringify({
+            email: trimmedEmail,
+            source: "website",
+          }),
+        });
+        const json = await res.json().catch(() => null);
+        if (!res.ok || !json?.success) {
+          setAlert({
+            type: "danger",
+            message: json?.message || "Subscription failed. Please try again.",
+          });
+          toast.error(json?.message || "Subscription failed.", {
+            autoClose: ALERT_DURATION,
+          });
+          return;
+        }
         setAlert({
           type: "success",
-          message: "Successfully subscribed to our newsletter!",
+          message:
+            json?.message || "Successfully subscribed to our newsletter!",
         });
-        toast.success("Successfully subscribed to our newsletter!", {
+        toast.success(json?.message || "Successfully subscribed!", {
           autoClose: ALERT_DURATION,
         });
-
-        // Clear email field
         setEmail("");
-      }, SUBMISSION_DELAY);
+      } catch (e: any) {
+        setAlert({
+          type: "danger",
+          message: e?.message || "Subscription failed. Please try again.",
+        });
+        toast.error("Subscription failed.", { autoClose: ALERT_DURATION });
+      } finally {
+        setIsSubmitting(false);
+      }
     },
     [email, validateEmail, focusField],
   );

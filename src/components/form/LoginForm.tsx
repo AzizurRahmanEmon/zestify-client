@@ -9,6 +9,11 @@ import { API_URL } from "@/lib/api";
 // Constants
 const ALERT_DURATION = 4000;
 
+const TENANT_ID =
+  process.env.NEXT_PUBLIC_TENANT_ID ||
+  process.env.NEXT_PUBLIC_TENANT_SLUG ||
+  "";
+
 interface FormData {
   email: string;
   password: string;
@@ -131,7 +136,10 @@ const LoginForm = () => {
       try {
         const res = await fetch(`${API_URL}/customers/login`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+          },
           body: JSON.stringify({
             email: trimmedData.email,
             password: trimmedData.password,

@@ -4,6 +4,11 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { API_URL } from "@/lib/api";
 import DatePicker from "./DatePicker";
 
+const TENANT_ID =
+  process.env.NEXT_PUBLIC_TENANT_ID ||
+  process.env.NEXT_PUBLIC_TENANT_SLUG ||
+  "";
+
 // Constants
 const ALERT_DURATION = 4000;
 
@@ -79,6 +84,9 @@ const HomeReservationForm = () => {
           )}`,
           {
             cache: "no-store",
+            headers: {
+              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+            },
           },
         );
 
@@ -227,7 +235,10 @@ const HomeReservationForm = () => {
     try {
       const res = await fetch(`${API_URL}/reservations`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+        },
         body: JSON.stringify({
           name: trimmedData.name,
           email: trimmedData.email,
