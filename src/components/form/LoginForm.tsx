@@ -156,6 +156,21 @@ const LoginForm = () => {
 
         // OTP is required — redirect to verification page
         if (json.mode === "otp") {
+          // If OTP is explicitly disabled via env, skip OTP redirect
+          if (process.env.NEXT_PUBLIC_OTP_REQUIRED === "false") {
+            const customer = json?.data ?? json;
+            setCurrentCustomer(customer);
+            setAlert({
+              type: "success",
+              message: "Login successful! Welcome back.",
+            });
+            toast.success("Login successful! Welcome back.", {
+              autoClose: ALERT_DURATION,
+            });
+            router.push("/dashboard");
+            return;
+          }
+
           toast.success("Check your email for the verification code.", {
             autoClose: ALERT_DURATION,
           });
@@ -165,7 +180,7 @@ const LoginForm = () => {
           return;
         }
 
-        // Fallback for non-OTP responses (should not happen)
+        // Direct login (OTP disabled or already verified)
         const customer = json?.data ?? json;
         setCurrentCustomer(customer);
         setAlert({

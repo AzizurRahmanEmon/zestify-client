@@ -24,6 +24,12 @@ const VerifyOtpForm = () => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
+    // If OTP is explicitly disabled via env, redirect to login
+    if (process.env.NEXT_PUBLIC_OTP_REQUIRED === "false") {
+      router.push("/login");
+      return;
+    }
+
     if (!email) {
       toast.error("No email provided. Please start from login.", {
         autoClose: ALERT_DURATION,
@@ -66,7 +72,10 @@ const VerifyOtpForm = () => {
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLInputElement>) => {
       e.preventDefault();
-      const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+      const pasted = e.clipboardData
+        .getData("text")
+        .replace(/\D/g, "")
+        .slice(0, 6);
       if (!pasted) return;
       const newOtp = pasted.split("").concat(Array(6).fill("")).slice(0, 6);
       setOtp(newOtp);
@@ -78,7 +87,9 @@ const VerifyOtpForm = () => {
   const handleVerify = useCallback(async () => {
     const code = otp.join("");
     if (code.length !== 6) {
-      toast.error("Please enter the 6-digit code.", { autoClose: ALERT_DURATION });
+      toast.error("Please enter the 6-digit code.", {
+        autoClose: ALERT_DURATION,
+      });
       return;
     }
 
