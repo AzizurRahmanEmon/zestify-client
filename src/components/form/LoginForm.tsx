@@ -20,13 +20,6 @@ interface FormData {
   rememberMe: boolean;
 }
 
-const socialLogins = [
-  { id: 1, icon: "facebook-f", label: "Facebook", color: "#1877F2" },
-  { id: 2, icon: "google", label: "Google", color: "#EA4335" },
-  { id: 3, icon: "twitter", label: "Twitter", color: "#1DA1F2" },
-  { id: 4, icon: "linkedin-in", label: "LinkedIn", color: "#0A66C2" },
-];
-
 const LoginForm = () => {
   const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
@@ -378,28 +371,6 @@ const LoginForm = () => {
           </button>
         </div>
       </form>
-
-      <div className="my-8 flex items-center">
-        <div className="flex-1 border-t border-gray-200"></div>
-        <span className="px-4 text-sm text-gray-500 bg-white">
-          Or continue with
-        </span>
-        <div className="flex-1 border-t border-gray-200"></div>
-      </div>
-
-      <div className="grid grid-cols-4 gap-3">
-        {socialLogins.map((social) => (
-          <button
-            key={social.id}
-            type="button"
-            className="flex items-center justify-center w-full py-3 border border-gray-200 rounded-xl hover:border-zPink hover:bg-zPink/5 transition-all duration-200 group"
-          >
-            <i
-              className={`fab fa-${social.icon} text-xl text-gray-600 group-hover:text-zPink transition-colors`}
-            ></i>
-          </button>
-        ))}
-      </div>
 
       <p className="mt-8 text-center text-sm text-gray-600">
         Don't have an account?{" "}
