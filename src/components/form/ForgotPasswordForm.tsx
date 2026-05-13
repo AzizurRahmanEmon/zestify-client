@@ -7,6 +7,7 @@ import { API_URL } from "@/lib/api";
 
 // Constants
 const ALERT_DURATION = 4000;
+const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || "";
 
 const ForgotPasswordForm = () => {
   const router = useRouter();
@@ -54,7 +55,10 @@ const ForgotPasswordForm = () => {
     try {
       const res = await fetch(`${API_URL}/customers/forgot-password`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+        },
         body: JSON.stringify({ email: email.trim() }),
       });
 
@@ -95,7 +99,10 @@ const ForgotPasswordForm = () => {
     try {
       const res = await fetch(`${API_URL}/customers/reset-password`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+        },
         body: JSON.stringify({
           email: email.trim(),
           otp: otp.trim(),
@@ -119,13 +126,20 @@ const ForgotPasswordForm = () => {
     return (
       <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
         <div className="mb-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Forgot Password</h2>
-          <p className="text-gray-600">Enter your email to receive a verification code</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Forgot Password
+          </h2>
+          <p className="text-gray-600">
+            Enter your email to receive a verification code
+          </p>
         </div>
         <form onSubmit={handleRequestOtp}>
           <div className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Email Address
               </label>
               <div className="relative">
@@ -158,7 +172,10 @@ const ForgotPasswordForm = () => {
             </button>
 
             <div className="text-center">
-              <Link href="/login" className="text-sm text-gray-600 hover:text-zPink transition-colors">
+              <Link
+                href="/login"
+                className="text-sm text-gray-600 hover:text-zPink transition-colors"
+              >
                 Back to Login
               </Link>
             </div>
@@ -171,13 +188,18 @@ const ForgotPasswordForm = () => {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
       <div className="mb-8 text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Reset Password</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          Reset Password
+        </h2>
         <p className="text-gray-600">Verification code sent to {email}</p>
       </div>
       <form onSubmit={handleResetPassword}>
         <div className="space-y-6">
           <div>
-            <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="otp"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Verification Code
             </label>
             <div className="relative">
@@ -198,7 +220,10 @@ const ForgotPasswordForm = () => {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               New Password
             </label>
             <div className="relative">
@@ -220,13 +245,18 @@ const ForgotPasswordForm = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-zPink"
               >
-                <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                <i
+                  className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}
+                ></i>
               </button>
             </div>
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Confirm New Password
             </label>
             <div className="relative">
