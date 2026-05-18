@@ -4,10 +4,7 @@ import { toast } from "react-toastify";
 import Image from "next/image";
 import { API_URL } from "@/lib/api";
 
-const TENANT_ID =
-  process.env.NEXT_PUBLIC_TENANT_ID ||
-  process.env.NEXT_PUBLIC_TENANT_SLUG ||
-  "";
+const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || "";
 
 // Constants
 const ALERT_DURATION = 4000;
@@ -55,7 +52,7 @@ const ContactForm = () => {
   }, []);
 
   const validatePhone = useCallback((phone: string): boolean => {
-    const regex = /^[\d\s\-\+\(\)]+$/;
+    const regex = /^[\d\s()+-]+$/;
     return regex.test(phone) && phone.replace(/\D/g, "").length >= 10;
   }, []);
 
@@ -236,12 +233,14 @@ const ContactForm = () => {
           company: "",
           message: "",
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to send message";
         setAlert({
           type: "danger",
-          message: err?.message || "Failed to send message",
+          message,
         });
-        toast.error(err?.message || "Failed to send message", {
+        toast.error(message, {
           autoClose: ALERT_DURATION,
         });
       } finally {

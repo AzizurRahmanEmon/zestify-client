@@ -54,7 +54,7 @@ const BestSellingProductSection = ({
                       height={210}
                       src={dish.image}
                       alt="img"
-                      className="m-auto h-52.5 w-56 transition-transform duration-500 group-hover:rotate-6"
+                      className="m-auto h-auto w-56 transition-transform duration-500 group-hover:rotate-6"
                     />
                   </div>
                   <div className="relative mt-10">
@@ -86,7 +86,7 @@ const BestSellingProductSection = ({
                     type="button"
                     aria-label={`Add ${dish.name} to cart`}
                     className="ar-btn mx-auto mt-8"
-                    onClick={() => addToCart(dish as any)}
+                    onClick={() => addToCart(dish)}
                   >
                     <Image
                       width={25}

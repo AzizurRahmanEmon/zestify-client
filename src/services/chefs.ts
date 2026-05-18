@@ -19,20 +19,20 @@ export async function getChefs(
   if (params.isActive !== undefined)
     query.set("isActive", String(params.isActive));
   if (params.limit) query.set("limit", String(params.limit));
-  const data = await request<Chef[] | { success: boolean; data: Chef[] }>(
+  const data = await request<Chef[] | { data: Chef[] }>(
     `/chefs?${query.toString()}`,
   );
   if (Array.isArray(data)) {
     return data;
   }
-  return ((data as any)?.data ?? data) as Chef[];
+  return data.data ?? [];
 }
 
 export async function getChefByProfileLink(
   profileLink: string,
 ): Promise<Chef | null> {
   try {
-    const data = await request<Chef | { success: boolean; data: Chef }>(
+    const data = await request<Chef | { data: Chef }>(
       `/chefs/${encodeURIComponent(profileLink)}`,
     );
     if (!data) {
@@ -42,8 +42,8 @@ export async function getChefByProfileLink(
       return data;
     }
     return data.data || null;
-  } catch (e: any) {
-    if (e?.message?.includes("404")) return null;
-    throw e;
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message.includes("404")) return null;
+    throw error;
   }
 }

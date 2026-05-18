@@ -8,19 +8,15 @@ import { getSettings } from "@/services/settings";
 const ContactPage = async () => {
   const [home, settings] = await Promise.all([
     getHomePage().catch(() => null),
-    getSettings().catch(() => ({})),
+    getSettings().catch(() => null),
   ]);
   return (
-    <MainLayout
-      header={(home as any)?.header}
-      insta={(home as any)?.insta}
-      footer={(home as any)?.footer}
-    >
+    <MainLayout header={home?.header} insta={home?.insta} footer={home?.footer}>
       <BreadcrumbSection title="Contact" />
-      <ContactSection settings={settings as any} />
+      <ContactSection settings={settings ?? undefined} />
       <VideoSection
         bgImg="/assets/img/contact-video-bg.png"
-        videoUrl={(settings as any)?.promoVideoUrl}
+        videoUrl={settings?.promoVideoUrl}
       />
     </MainLayout>
   );

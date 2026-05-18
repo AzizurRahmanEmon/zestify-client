@@ -1,7 +1,6 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { useCustomContext } from "@/context/context";
@@ -12,15 +11,14 @@ const CartSection = () => {
   const { cartList, updateQuantity, deleteItem } = useCustomContext();
   const formatPrice = (value: number) => value.toFixed(2);
 
-  const [couponDiscount, setCouponDiscount] = useState(0);
-
   const subtotal = cartList.reduce(
     (total, product) => total + product.price * (product.quantity || 1),
     0,
   );
+  const couponDiscount = 0;
 
   const handleCheckout = () => {
-    const customer = getCurrentCustomer() as any;
+    const customer = getCurrentCustomer();
     if (!customer?.token) {
       toast.error("Please login to proceed with checkout.", {
         autoClose: 4000,

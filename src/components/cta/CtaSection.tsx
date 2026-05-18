@@ -37,7 +37,7 @@ const CtaSection = ({
           <div className="relative">
             <Image
               width={64}
-              height={24}
+              height={23}
               src="/assets/img/right-arrow.png"
               alt="arrow"
               className="absolute top-1/2 w-auto h-6 -translate-y-1/2 -left-4 xl:-left-6"
@@ -66,7 +66,7 @@ const CtaSection = ({
           <div className="relative">
             <Image
               width={64}
-              height={24}
+              height={23}
               src="/assets/img/right-arrow.png"
               alt="arrow"
               className="absolute top-1/2 w-auto h-6 -translate-y-1/2 -left-4 xl:-left-6"

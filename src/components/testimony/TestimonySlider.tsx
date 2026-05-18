@@ -29,8 +29,8 @@ const TestimonySlider = ({ items }: { items?: Testimonial[] }) => {
       }}
       modules={[Autoplay]}
     >
-      {slides.map((item: any, idx: number) => (
-        <SwiperSlide key={item.id ?? idx}>
+      {slides.map((item, idx) => (
+        <SwiperSlide key={item.name ?? idx}>
           <div className="bg-[#F2F2F2] px-8 py-9 max-w-70.5">
             <div className="flex items-center gap-1 text-[#F5C536]">
               <i className="fa-solid fa-star"></i>

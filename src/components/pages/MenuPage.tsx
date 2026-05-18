@@ -8,13 +8,12 @@ import { getHomePage, getMenuPage } from "@/services/pages";
 
 const MenuPage = async () => {
   const [settings, home, menuConfig] = await Promise.all([
-    getSettings().catch(() => ({})),
+    getSettings().catch(() => null),
     getHomePage().catch(() => null),
     getMenuPage().catch(() => null),
   ]);
-  const coffeeCategory =
-    (menuConfig as any)?.menuPage?.coffeeCategory || "coffee";
-  const grillCategory = (menuConfig as any)?.menuPage?.grillCategory || "grill";
+  const coffeeCategory = menuConfig?.menuPage?.coffeeCategory || "coffee";
+  const grillCategory = menuConfig?.menuPage?.grillCategory || "grill";
   const [featuredCoffee, featuredGrill, sixProducts] = await Promise.all([
     getProducts({
       category: coffeeCategory,
@@ -31,33 +30,27 @@ const MenuPage = async () => {
     getProducts({ isActive: true, limit: 6 }).catch(() => []),
   ]);
   return (
-    <MainLayout
-      header={(home as any)?.header}
-      insta={(home as any)?.insta}
-      footer={(home as any)?.footer}
-    >
+    <MainLayout header={home?.header} insta={home?.insta} footer={home?.footer}>
       <BreadcrumbSection title="Menu" />
       <MenuSection2
-        coffeeTitle={
-          (menuConfig as any)?.menuPage?.coffeeTitle || "Coffee Menu"
-        }
-        grillTitle={(menuConfig as any)?.menuPage?.grillTitle || "Grill Food"}
+        coffeeTitle={menuConfig?.menuPage?.coffeeTitle || "Coffee Menu"}
+        grillTitle={menuConfig?.menuPage?.grillTitle || "Grill Food"}
         coffeeProducts={featuredCoffee}
         grillProducts={featuredGrill}
-        coffeeSubtitle={(menuConfig as any)?.menuPage?.coffeeSubtitle}
-        grillSubtitle={(menuConfig as any)?.menuPage?.grillSubtitle}
+        coffeeSubtitle={menuConfig?.menuPage?.coffeeSubtitle}
+        grillSubtitle={menuConfig?.menuPage?.grillSubtitle}
         coffeeImage={
-          (menuConfig as any)?.menuPage?.coffeeImage ||
+          menuConfig?.menuPage?.coffeeImage ||
           "/assets/img/coffee-menu-banner.png"
         }
         grillImage={
-          (menuConfig as any)?.menuPage?.grillImage ||
+          menuConfig?.menuPage?.grillImage ||
           "/assets/img/grill-menu-banner.png"
         }
       />
       <MenuSection3
         products={sixProducts}
-        businessHours={(settings as any)?.businessHours}
+        businessHours={settings?.businessHours}
       />
     </MainLayout>
   );

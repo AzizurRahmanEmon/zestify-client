@@ -1,39 +1,5 @@
+import { teamValues } from "@/data";
 import Image from "next/image";
-
-const teamValues = [
-  {
-    id: 1,
-    icon: "fa-solid fa-fire-burner",
-    title: "Passionate Cooking",
-    desc: "Every dish is crafted with love and dedication",
-    gradient: "from-orange-500 to-red-500",
-    bgColor: "bg-orange-50",
-  },
-  {
-    id: 2,
-    icon: "fa-solid fa-star",
-    title: "Quality First",
-    desc: "We use only the finest ingredients & techniques",
-    gradient: "from-yellow-500 to-orange-500",
-    bgColor: "bg-yellow-50",
-  },
-  {
-    id: 3,
-    icon: "fa-solid fa-handshake",
-    title: "Teamwork",
-    desc: "Collaboration makes our kitchen run smoothly",
-    gradient: "from-blue-500 to-purple-500",
-    bgColor: "bg-blue-50",
-  },
-  {
-    id: 4,
-    icon: "fa-solid fa-palette",
-    title: "Creativity",
-    desc: "Innovation in every recipe and presentation",
-    gradient: "from-purple-500 to-pink-500",
-    bgColor: "bg-purple-50",
-  },
-];
 
 const TeamValueSection = () => {
   return (

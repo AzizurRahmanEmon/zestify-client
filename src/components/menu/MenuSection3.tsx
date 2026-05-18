@@ -43,11 +43,13 @@ const MenuSection3 = ({ products, businessHours }: Props) => {
         {/* Menu Grid - Keeping original layout structure */}
         <div>
           <ul className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 md:w-full md:grid-cols-2 sm:w-8/12 sm:mx-auto gap-8 mt-10 lg:mt-15">
-            {(products || []).slice(0, 4).map((product: any, index: number) => (
-              <li key={product.id || index}>
-                <ProductCard product={product} />
-              </li>
-            ))}
+            {(products || [])
+              .slice(0, 4)
+              .map((product: ProductDataType, index: number) => (
+                <li key={product._id || product.slug || index}>
+                  <ProductCard product={product} />
+                </li>
+              ))}
 
             {/* Opening Times - Enhanced but keeping original structure */}
             <li className="md:col-span-2 col-span-1">
@@ -86,11 +88,13 @@ const MenuSection3 = ({ products, businessHours }: Props) => {
               </div>
             </li>
 
-            {(products || []).slice(4, 6).map((product: any, index: number) => (
-              <li key={product.id || index}>
-                <ProductCard product={product} />
-              </li>
-            ))}
+            {(products || [])
+              .slice(4, 6)
+              .map((product: ProductDataType, index: number) => (
+                <li key={product._id || product.slug || index}>
+                  <ProductCard product={product} />
+                </li>
+              ))}
           </ul>
         </div>
       </div>

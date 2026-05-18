@@ -9,10 +9,7 @@ import { API_URL } from "@/lib/api";
 // Constants
 const ALERT_DURATION = 4000;
 
-const TENANT_ID =
-  process.env.NEXT_PUBLIC_TENANT_ID ||
-  process.env.NEXT_PUBLIC_TENANT_SLUG ||
-  "";
+const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID;
 
 interface FormData {
   email: string;
@@ -184,10 +181,14 @@ const LoginForm = () => {
           autoClose: ALERT_DURATION,
         });
         router.push("/dashboard");
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Invalid credentials. Please try again.";
         setAlert({
           type: "danger",
-          message: error?.message || "Invalid credentials. Please try again.",
+          message,
         });
         toast.error("Invalid credentials. Please try again.", {
           autoClose: ALERT_DURATION,
@@ -196,7 +197,7 @@ const LoginForm = () => {
         setIsLoading(false);
       }
     },
-    [formData, validateEmail, focusField],
+    [formData, validateEmail, focusField, router],
   );
 
   return (

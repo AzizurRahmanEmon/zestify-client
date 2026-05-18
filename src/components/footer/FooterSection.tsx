@@ -1,6 +1,7 @@
 import Link from "next/link";
 import NewsletterForm2 from "@/components/form/NewsletterForm2";
 import Image from "next/image";
+import { footerNavigations, footerServices, footerSocials } from "@/data";
 
 interface Props {
   logo?: string;
@@ -15,49 +16,7 @@ interface Props {
   companyName?: string;
   copyright?: string;
 }
-const footerNavigations = [
-  { id: 1, href: "/shop", text: "Shop" },
-  { id: 2, href: "/blog", text: "Blog" },
-  { id: 3, href: "/contact", text: "Contact" },
-  { id: 4, href: "/gallery", text: "Gallery" },
-  { id: 5, href: "/reservation", text: "Reservation" },
-];
-const footerServices = [
-  { id: 1, href: "/services", text: "Services" },
-  { id: 2, href: "/menu", text: "Menu" },
-  { id: 3, href: "/about", text: "About Us" },
-  { id: 4, href: "/login", text: "Join us" },
-];
-const footerSocials = [
-  {
-    id: 1,
-    name: "Facebook",
-    icon: "fa-brands fa-facebook-f",
-    href: "https://facebook.com",
-    color: "from-blue-500 to-blue-600",
-  },
-  {
-    id: 2,
-    name: "Twitter",
-    icon: "fa-brands fa-twitter",
-    href: "https://twitter.com",
-    color: "from-sky-400 to-sky-500",
-  },
-  {
-    id: 3,
-    name: "Vine",
-    icon: "fa-brands fa-vine",
-    href: "https://vine.co",
-    color: "from-green-500 to-green-600",
-  },
-  {
-    id: 4,
-    name: "Instagram",
-    icon: "fa-brands fa-instagram",
-    href: "https://instagram.com",
-    color: "from-zPink/60 to-purple-600",
-  },
-];
+
 const FooterSection = ({
   logo = "/assets/img/logo-main.png",
   shortDesc = "Temporibus autem quibusdam officiis aut rerum necessitatibus eveniet voluta repudiandae molestiae recusandae",

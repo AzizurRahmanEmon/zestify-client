@@ -58,8 +58,8 @@ export async function getGalleryItem(id: string): Promise<GalleryItem | null> {
       return data;
     }
     return data.data || null;
-  } catch (e: any) {
-    if (e?.message?.includes("404")) return null;
-    throw e;
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message.includes("404")) return null;
+    throw error;
   }
 }

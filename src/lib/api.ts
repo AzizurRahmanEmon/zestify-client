@@ -22,10 +22,7 @@ export type { ApiResponse };
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${API_URL}${path.startsWith("/") ? path : `/${path}`}`;
-  const tenantId =
-    process.env.NEXT_PUBLIC_TENANT_ID ||
-    process.env.NEXT_PUBLIC_TENANT_SLUG ||
-    "";
+  const tenantId = process.env.NEXT_PUBLIC_TENANT_ID || "";
   const res = await fetch(url, {
     ...init,
     cache: "no-store",
@@ -42,7 +39,7 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
       `Request failed (${res.status} ${res.statusText}) for ${url}: ${text}`,
     );
   }
-  const json = (await res.json()) as ApiResponse<any>;
+  const json = (await res.json()) as ApiResponse<unknown>;
   if (json && typeof json === "object" && "success" in json) {
     if (!json.success) {
       throw new Error(json.message || "Unknown API error");
@@ -67,9 +64,45 @@ type ApiProduct = {
   rating?: { stars?: number; reviews?: number };
   isFeatured?: boolean;
   isActive?: boolean;
+  preparationTime?: number | string;
+  ingredients?: string[];
+  allergens?: string[];
+  nutritionInfo?: ProductDataType["nutritionInfo"];
   createdAt?: string;
   updatedAt?: string;
 };
+
+type ProductListEnvelope = ApiResponse<ApiProduct[]>;
+
+type HomePageEnvelope = ApiResponse<HomePageContent>;
+
+type ProductReviewsPayload = {
+  averageRating?: number;
+  reviewsCount?: number;
+  items?: ProductReviewItem[];
+};
+
+type ProductReviewsEnvelope = ApiResponse<ProductReviewsPayload>;
+
+type ProductReviewCheck = {
+  canReview?: boolean;
+};
+
+function hasData<T>(value: T | ApiResponse<T>): value is ApiResponse<T> {
+  return typeof value === "object" && value !== null && "data" in value;
+}
+
+function isProductReviewItem(value: unknown): value is ProductReviewItem {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "_id" in value &&
+    "name" in value &&
+    "rating" in value &&
+    "review" in value &&
+    "createdAt" in value
+  );
+}
 
 function mapApiProduct(p: ApiProduct): ProductDataType {
   return {
@@ -94,10 +127,13 @@ function mapApiProduct(p: ApiProduct): ProductDataType {
     stock: p.stock,
     isFeatured: p.isFeatured,
     isActive: p.isActive,
-    preparationTime: (p as any).preparationTime,
-    ingredients: (p as any).ingredients,
-    allergens: (p as any).allergens,
-    nutritionInfo: (p as any).nutritionInfo,
+    preparationTime:
+      typeof p.preparationTime === "string"
+        ? Number(p.preparationTime)
+        : p.preparationTime,
+    ingredients: p.ingredients,
+    allergens: p.allergens,
+    nutritionInfo: p.nutritionInfo,
   };
 }
 
@@ -134,18 +170,14 @@ export async function getProducts(
   if (params.page) query.set("page", String(params.page));
   if (params.limit) query.set("limit", String(params.limit));
 
-  const data = await request<{
-    success: boolean;
-    count: number;
-    total: number;
-    page: number;
-    pages: number;
-    data: ApiProduct[];
-  }>(`/products?${query.toString()}`);
-
-  const products: ApiProduct[] = Array.isArray((data as any)?.data)
-    ? (data as any).data
-    : (data as any);
+  const data = await request<ProductListEnvelope | ApiProduct[]>(
+    `/products?${query.toString()}`,
+  );
+  const products = Array.isArray(data)
+    ? data
+    : Array.isArray(data.data)
+      ? (data.data ?? [])
+      : [];
   return products.map(mapApiProduct);
 }
 
@@ -153,15 +185,15 @@ export async function getRelatedProducts(
   slug: string,
   limit = 4,
 ): Promise<ProductDataType[]> {
-  const data = await request<any>(
+  const data = await request<ApiProduct[] | ProductListEnvelope>(
     `/products/${encodeURIComponent(slug)}/related?limit=${encodeURIComponent(
       String(limit),
     )}`,
   );
-  const list: ApiProduct[] = Array.isArray((data as any)?.data)
-    ? (data as any).data
-    : Array.isArray(data)
-      ? data
+  const list: ApiProduct[] = Array.isArray(data)
+    ? data
+    : Array.isArray(data.data)
+      ? (data.data ?? [])
       : [];
   return list.map(mapApiProduct);
 }
@@ -205,10 +237,10 @@ export async function getProductReviews(
   if (params.page) query.set("page", String(params.page));
   if (params.limit) query.set("limit", String(params.limit));
   const qs = query.toString();
-  const json = await request<any>(
+  const json = await request<ProductReviewsEnvelope | ProductReviewsPayload>(
     `/products/${encodeURIComponent(slug)}/reviews${qs ? `?${qs}` : ""}`,
   );
-  const data = json?.data ?? json;
+  const data = hasData<ProductReviewsPayload>(json) ? (json.data ?? {}) : json;
   return {
     averageRating: Number(data?.averageRating || 0),
     reviewsCount: Number(data?.reviewsCount || 0),
@@ -223,7 +255,7 @@ export async function canReviewProduct(
   email?: string,
 ): Promise<boolean> {
   if (!email) return false;
-  const data = await request<any>(
+  const data = await request<ProductReviewCheck>(
     `/products/${encodeURIComponent(slug)}/reviews/can-review?email=${encodeURIComponent(
       email,
     )}`,
@@ -235,15 +267,20 @@ export async function postProductReview(
   slug: string,
   payload: { name: string; email: string; rating: number; review: string },
 ): Promise<ProductReviewItem> {
-  const json = await request<any>(
-    `/products/${encodeURIComponent(slug)}/reviews`,
-    {
-      method: "POST",
-      body: JSON.stringify(payload),
-    },
-  );
-  const data = json?.data ?? json;
-  return data as ProductReviewItem;
+  const json = await request<
+    ProductReviewItem | ProductReviewItem[] | { data?: ProductReviewItem }
+  >(`/products/${encodeURIComponent(slug)}/reviews`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  const data =
+    typeof json === "object" && json !== null && "data" in json
+      ? json.data
+      : json;
+  if (isProductReviewItem(data)) {
+    return data;
+  }
+  throw new Error("Invalid review response");
 }
 
 export async function getProductBySlug(
@@ -252,7 +289,7 @@ export async function getProductBySlug(
   try {
     const product = await request<ApiProduct>(`/products/${slug}`);
     return mapApiProduct(product);
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -330,14 +367,10 @@ export type HomePageContent = {
 };
 
 export async function getHomePage(): Promise<HomePageContent> {
-  const data = await request<{ success: boolean; data: HomePageContent }>(
-    "/pages/home",
-  );
-  const content =
-    (data as any)?.data && typeof (data as any).data === "object"
-      ? ((data as any).data as HomePageContent)
-      : (data as any);
-  return content;
+  const data = await request<HomePageContent | HomePageEnvelope>("/pages/home");
+  return hasData<HomePageContent>(data)
+    ? (data.data ?? { slug: "", sectionsOrder: [] })
+    : data;
 }
 
 // Additional content fetchers for client homepage
@@ -354,16 +387,15 @@ export type Chef = {
 };
 export async function getChefs(
   params: { isActive?: boolean; limit?: number } = {},
-) {
+): Promise<Chef[]> {
   const query = new URLSearchParams();
   if (params.isActive !== undefined)
     query.set("isActive", String(params.isActive));
   if (params.limit) query.set("limit", String(params.limit));
-  const res = await request<{ success: boolean; data: Chef[] }>(
+  const res = await request<Chef[] | ApiResponse<Chef[]>>(
     `/chefs?${query.toString()}`,
   );
-  const arr = (res as any)?.data ?? (res as any);
-  return arr as Chef[];
+  return hasData<Chef[]>(res) ? (res.data ?? []) : res;
 }
 
 export type Partner = {
@@ -375,15 +407,15 @@ export type Partner = {
 };
 export async function getPartners(
   params: { isActive?: boolean; limit?: number } = {},
-) {
+): Promise<Partner[]> {
   const query = new URLSearchParams();
   if (params.isActive !== undefined)
     query.set("isActive", String(params.isActive));
   if (params.limit) query.set("limit", String(params.limit));
-  const res = await request<{ success: boolean; data: Partner[] }>(
+  const res = await request<Partner[] | ApiResponse<Partner[]>>(
     `/partners?${query.toString()}`,
   );
-  return ((res as any)?.data ?? res) as Partner[];
+  return hasData<Partner[]>(res) ? (res.data ?? []) : res;
 }
 
 export type Testimonial = {
@@ -396,15 +428,15 @@ export type Testimonial = {
 };
 export async function getTestimonials(
   params: { isActive?: boolean; limit?: number } = {},
-) {
+): Promise<Testimonial[]> {
   const query = new URLSearchParams();
   if (params.isActive !== undefined)
     query.set("isActive", String(params.isActive));
   if (params.limit) query.set("limit", String(params.limit));
-  const res = await request<{ success: boolean; data: Testimonial[] }>(
+  const res = await request<Testimonial[] | ApiResponse<Testimonial[]>>(
     `/testimonials?${query.toString()}`,
   );
-  return ((res as any)?.data ?? res) as Testimonial[];
+  return hasData<Testimonial[]>(res) ? (res.data ?? []) : res;
 }
 
 export type Blog = {
@@ -416,15 +448,15 @@ export type Blog = {
 };
 export async function getBlogs(
   params: { status?: string; limit?: number; sort?: string } = {},
-) {
+): Promise<Blog[]> {
   const query = new URLSearchParams();
   if (params.status) query.set("status", params.status);
   if (params.limit) query.set("limit", String(params.limit));
   if (params.sort) query.set("sort", params.sort);
-  const res = await request<{ success: boolean; data: Blog[] }>(
+  const res = await request<Blog[] | ApiResponse<Blog[]>>(
     `/blogs?${query.toString()}`,
   );
-  return ((res as any)?.data ?? res) as Blog[];
+  return hasData<Blog[]>(res) ? (res.data ?? []) : res;
 }
 
 export type Settings = {
@@ -452,6 +484,6 @@ export type Settings = {
   minimumPointsToRedeem?: number;
 };
 export async function getSettings(): Promise<Settings> {
-  const res = await request<{ success: boolean; data: Settings }>(`/settings`);
-  return ((res as any)?.data ?? res) as Settings;
+  const res = await request<Settings | ApiResponse<Settings>>(`/settings`);
+  return hasData<Settings>(res) ? (res.data ?? {}) : res;
 }

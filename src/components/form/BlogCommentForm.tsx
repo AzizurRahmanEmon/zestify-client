@@ -8,10 +8,7 @@ import { getCurrentCustomer } from "@/lib/auth";
 
 // Constants
 const ALERT_DURATION = 4000;
-const TENANT_ID =
-  process.env.NEXT_PUBLIC_TENANT_ID ||
-  process.env.NEXT_PUBLIC_TENANT_SLUG ||
-  "";
+const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID;
 
 type Props = {
   blogId: string;
@@ -42,7 +39,8 @@ const BlogCommentForm = ({
   } | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentCustomer, setCurrentCustomer] = useState<any>(null);
+  const [currentCustomer, setCurrentCustomer] =
+    useState<ReturnType<typeof getCurrentCustomer>>(null);
 
   useEffect(() => {
     const read = () => {
@@ -178,7 +176,7 @@ const BlogCommentForm = ({
 
       setIsSubmitting(true);
       try {
-        const token = (getCurrentCustomer() as any)?.token;
+        const token = getCurrentCustomer()?.token;
         const res = await fetch(
           `${API_URL}/blogs/${encodeURIComponent(blogId)}/comments`,
           {

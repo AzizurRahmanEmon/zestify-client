@@ -25,8 +25,10 @@ export const useShopFilters = (products: ProductDataType[]) => {
   const shopSearchTerm = searchParams?.get("search") ?? "";
   const shopSelectedCategory = searchParams?.get("category") ?? "";
   const shopSelectedSort = (searchParams?.get("sort") ?? "") as SortOption;
-  const shopSelectedTags =
-    searchParams?.get("tags")?.split(",").filter(Boolean) ?? [];
+  const shopSelectedTags = useMemo(
+    () => searchParams?.get("tags")?.split(",").filter(Boolean) ?? [],
+    [searchParams],
+  );
   const shopMinPrice = parseFloat(searchParams?.get("minPrice") ?? "6");
   const shopMaxPrice = parseFloat(searchParams?.get("maxPrice") ?? "56");
   const shopCurrentPage = parseInt(searchParams?.get("page") ?? "1");

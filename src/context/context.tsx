@@ -142,8 +142,10 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({
   }, [cartList]);
 
   const addToCart = (product: ProductDataType) => {
-    let toastMessage = "";
     const productQuantity = product.quantity ?? 1;
+    const hasExistingProduct = cartList.some(
+      (item) => item.slug === product.slug,
+    );
 
     setCartList((prevCart) => {
       const existingProduct = prevCart.find(
@@ -151,18 +153,19 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({
       );
 
       if (existingProduct) {
-        toastMessage = "Item quantity updated in cart";
         return prevCart.map((item) =>
           item.slug === product.slug
             ? { ...item, quantity: (item.quantity ?? 1) + productQuantity }
             : item,
         );
       } else {
-        toastMessage = "Item added to cart";
         return [...prevCart, { ...product, quantity: productQuantity }];
       }
     });
 
+    const toastMessage = hasExistingProduct
+      ? "Item quantity updated in cart"
+      : "Item added to cart";
     if (toastMessage) toast.success(toastMessage);
   };
 
@@ -218,7 +221,7 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({
     let cancelled = false;
 
     const hydrateSessionLists = async () => {
-      const customer = getCurrentCustomer() as any;
+      const customer = getCurrentCustomer();
       if (!customer?.token) {
         if (!cancelled) {
           setIsSessionHydrated(true);
@@ -274,7 +277,7 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({
   useEffect(() => {
     if (!isSessionHydrated) return;
 
-    const customer = getCurrentCustomer() as any;
+    const customer = getCurrentCustomer();
     if (!customer?.token) return;
 
     const timeout = setTimeout(async () => {
@@ -350,7 +353,7 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({
   );
 
   const moveWishlistToCart = () => {
-    let toastMessage = "All items moved to cart";
+    const toastMessage = "All items moved to cart";
     setCartList((prevCart) => {
       const newCart = [...prevCart];
 

@@ -71,7 +71,7 @@ const TeamSection = ({
             .slice(0, main ? displayMembers.length : 3)
             .map((member, idx) => (
               <div
-                key={(member as any)._id ?? member.profileLink ?? idx}
+                key={member._id ?? member.profileLink ?? idx}
                 className="group transition-all duration-500 hover:transform hover:scale-105"
               >
                 <div className="relative h-114 overflow-hidden rounded-t-lg">

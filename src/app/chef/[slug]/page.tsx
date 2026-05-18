@@ -46,5 +46,5 @@ export default async function Home({
 }) {
   const { slug } = await params;
   const chefInfo = await getChefBySlug(slug);
-  return <ChefDetailPage chefInfo={chefInfo as any} />;
+  return <ChefDetailPage chefInfo={chefInfo} />;
 }

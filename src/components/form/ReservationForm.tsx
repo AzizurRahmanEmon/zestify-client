@@ -1,334 +1,20 @@
 "use client";
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { toast } from "react-toastify";
-import { API_URL } from "@/lib/api";
-import { getCurrentCustomer } from "@/lib/auth";
+import { useReservationForm } from "@/hooks/useReservationForm";
 import DatePicker from "./DatePicker";
 
-const TENANT_ID =
-  process.env.NEXT_PUBLIC_TENANT_ID ||
-  process.env.NEXT_PUBLIC_TENANT_SLUG ||
-  "";
-
-// Constants
-const ALERT_DURATION = 4000;
-const SUBMISSION_DELAY = 2000;
-
 const ReservationForm = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    date: "",
-    time: "",
-    guests: "",
-    message: "",
-  });
-
-  const [alert, setAlert] = useState<{
-    type: "success" | "danger";
-    message: string;
-  } | null>(null);
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [availableSlots, setAvailableSlots] = useState<
-    { time: string; available: boolean }[]
-  >([]);
-  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
-
-  // Auto-fill from customer profile if logged in; do NOT redirect on mount
-  useEffect(() => {
-    const customer = getCurrentCustomer() as any;
-    if (!customer?.token) return;
-
-    setFormData((prev) => ({
-      ...prev,
-      name: customer.name || prev.name,
-      email: customer.email || prev.email,
-      phone: customer.phone || prev.phone,
-    }));
-
-    fetch(`${API_URL}/customers/me`, {
-      headers: { Authorization: `Bearer ${customer.token}` },
-      cache: "no-store",
-    })
-      .then((r) => r.json())
-      .then((json) => {
-        const data = json?.data ?? {};
-        setFormData((prev) => ({
-          ...prev,
-          name: data.name || prev.name,
-          email: data.email || prev.email,
-          phone: data.phone || prev.phone,
-        }));
-      })
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    if (alert) {
-      const timer = setTimeout(() => {
-        setAlert(null);
-      }, ALERT_DURATION);
-
-      return () => clearTimeout(timer);
-    }
-  }, [alert]);
-
-  const validateEmail = useCallback((email: string): boolean => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-  }, []);
-
-  const validatePhone = useCallback((phone: string): boolean => {
-    const regex = /^[\d\s\-\+\(\)]+$/;
-    return regex.test(phone) && phone.replace(/\D/g, "").length >= 10;
-  }, []);
-
-  const focusField = useCallback((field: string) => {
-    const element = document.getElementById(field);
-    element?.focus();
-  }, []);
-
-  const handleInputChange = (e: any) => {
-    const { name, value } = e.target;
-    // Lock email field only when logged in
-    if (name === "email" && (getCurrentCustomer() as any)?.token) return;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    if (alert?.type === "danger") {
-      setAlert(null);
-    }
-  };
-
-  const availableTimes = useMemo(() => {
-    return availableSlots.filter((s) => s.available).map((s) => s.time);
-  }, [availableSlots]);
-
-  useEffect(() => {
-    const dateStr = formData.date.trim();
-    if (!dateStr) {
-      setAvailableSlots([]);
-      return;
-    }
-
-    let cancelled = false;
-    const load = async () => {
-      setIsLoadingSlots(true);
-      try {
-        const res = await fetch(
-          `${API_URL}/reservations/check/available-slots?date=${encodeURIComponent(
-            dateStr,
-          )}`,
-          {
-            cache: "no-store",
-            headers: {
-              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-            },
-          },
-        );
-
-        const json = await res.json().catch(() => null);
-        if (cancelled) return;
-
-        if (!res.ok || !json?.success) {
-          setAvailableSlots([]);
-          return;
-        }
-
-        const slots = Array.isArray(json?.data?.slots) ? json.data.slots : [];
-        setAvailableSlots(slots);
-
-        if (
-          formData.time &&
-          slots.length > 0 &&
-          !slots.some((s: any) => s?.available && s?.time === formData.time)
-        ) {
-          setFormData((prev) => ({ ...prev, time: "" }));
-        }
-      } catch {
-        if (!cancelled) setAvailableSlots([]);
-      } finally {
-        if (!cancelled) setIsLoadingSlots(false);
-      }
-    };
-
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [formData.date, formData.time]);
-
-  const handleSubmit = useCallback(async () => {
-    const trimmedData = {
-      name: formData.name.trim(),
-      email: formData.email.trim(),
-      phone: formData.phone.trim(),
-      date: formData.date.trim(),
-      time: formData.time.trim(),
-      guests: formData.guests.trim(),
-      message: formData.message.trim(),
-    };
-
-    setAlert(null);
-
-    if (!trimmedData.name) {
-      setAlert({ type: "danger", message: "Name is required." });
-      focusField("name");
-      return;
-    }
-
-    if (trimmedData.name.length < 2) {
-      setAlert({
-        type: "danger",
-        message: "Name must be at least 2 characters long.",
-      });
-      focusField("name");
-      return;
-    }
-
-    if (!trimmedData.email) {
-      setAlert({ type: "danger", message: "Email address is required." });
-      focusField("email");
-      return;
-    }
-
-    if (!validateEmail(trimmedData.email)) {
-      setAlert({
-        type: "danger",
-        message: "Please enter a valid email address.",
-      });
-      focusField("email");
-      return;
-    }
-
-    if (!trimmedData.phone) {
-      setAlert({ type: "danger", message: "Phone number is required." });
-      focusField("phone");
-      return;
-    }
-
-    if (!validatePhone(trimmedData.phone)) {
-      setAlert({
-        type: "danger",
-        message: "Please enter a valid phone number.",
-      });
-      focusField("phone");
-      return;
-    }
-
-    if (!trimmedData.date) {
-      setAlert({ type: "danger", message: "Date is required." });
-      focusField("date");
-      return;
-    }
-
-    if (!trimmedData.time) {
-      setAlert({ type: "danger", message: "Preferred time is required." });
-      focusField("time");
-      return;
-    }
-
-    if (
-      availableTimes.length > 0 &&
-      !availableTimes.includes(trimmedData.time)
-    ) {
-      setAlert({
-        type: "danger",
-        message: "This time slot is not available. Please choose another time.",
-      });
-      focusField("time");
-      return;
-    }
-
-    if (!trimmedData.guests) {
-      setAlert({ type: "danger", message: "Please select party size." });
-      focusField("guests");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const guestCount = parseInt(trimmedData.guests.replace("+", "")) || 1;
-      const customer = getCurrentCustomer() as any;
-      if (!customer?.token) {
-        toast.error("Please login to make a reservation.", { autoClose: 4000 });
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          date: "",
-          time: "",
-          guests: "",
-          message: "",
-        });
-        return;
-      }
-
-      const res = await fetch(`${API_URL}/reservations`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-          Authorization: `Bearer ${customer.token}`,
-        },
-        cache: "no-store",
-        body: JSON.stringify({
-          name: trimmedData.name,
-          email: trimmedData.email,
-          phone: trimmedData.phone,
-          date: trimmedData.date,
-          time: trimmedData.time,
-          numberOfGuests: guestCount,
-          specialRequests: trimmedData.message,
-        }),
-      });
-
-      const json = await res.json().catch(() => null);
-
-      if (!res.ok || !json?.success) {
-        setAlert({
-          type: "danger",
-          message:
-            json?.message || "Reservation submission failed. Please try again.",
-        });
-        return;
-      }
-
-      await new Promise((r) => setTimeout(r, SUBMISSION_DELAY));
-
-      setAlert({
-        type: "success",
-        message: json?.message || "Reservation submitted successfully!",
-      });
-
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        date: "",
-        time: "",
-        guests: "",
-        message: "",
-      });
-      setAvailableSlots([]);
-    } catch (e: any) {
-      setAlert({
-        type: "danger",
-        message:
-          e?.message || "Reservation submission failed. Please try again.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [availableTimes, focusField, formData, validateEmail, validatePhone]);
-
-  const today = new Date().toISOString().split("T")[0];
+  const {
+    alert,
+    availableTimes,
+    currentCustomer,
+    formData,
+    handleInputChange,
+    handleSubmit,
+    isLoadingSlots,
+    isSubmitting,
+    setFormData,
+    today,
+  } = useReservationForm({ messagePayloadKey: "specialRequests" });
 
   return (
     <div className="space-y-8 max-w-2xl mx-auto p-6">
@@ -375,16 +61,16 @@ const ReservationForm = () => {
           id="email"
           value={formData.email}
           onChange={handleInputChange}
-          readOnly={!!(getCurrentCustomer() as any)?.token}
+          readOnly={!!currentCustomer?.token}
           disabled={isSubmitting}
           className={`w-full px-6 py-4 border border-gray-200 rounded-2xl placeholder-transparent focus:outline-none peer disabled:opacity-50 ${
-            (getCurrentCustomer() as any)?.token
+            currentCustomer?.token
               ? "bg-gray-100 text-gray-600 focus:ring-0 cursor-not-allowed"
               : "bg-gray-50/50 text-gray-900 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all duration-300"
           }`}
           placeholder="Email Address"
           title={
-            (getCurrentCustomer() as any)?.token
+            currentCustomer?.token
               ? "Your registered email (cannot be changed)"
               : "Enter your email address"
           }

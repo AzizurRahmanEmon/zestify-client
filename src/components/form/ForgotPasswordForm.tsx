@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/lib/api";
@@ -67,8 +67,10 @@ const ForgotPasswordForm = () => {
 
       toast.success("Verification code sent to your email!");
       setStep(2);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to process request");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Failed to process request";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -115,8 +117,10 @@ const ForgotPasswordForm = () => {
 
       toast.success("Password reset successful! Please login.");
       router.push("/login");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to reset password");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Failed to reset password";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
