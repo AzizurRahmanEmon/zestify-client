@@ -1,13 +1,16 @@
 export type BlogDataTypes = {
-  id: number;
-  excerpt: string;
-  img: string;
-  descImg: string;
-  date: string;
+  _id: string;
   title: string;
+  img: string;
+  descImg?: string;
+  date?: string;
   link: string;
-  category: string;
-  tags: string[];
+  category?: string;
+  tags?: string[];
+  excerpt?: string;
+  content?: string;
+  author?: { name?: string };
+  readTime?: number;
 };
 
 export type ProductDataType = {
@@ -79,4 +82,84 @@ export type Customer = {
   loyaltyPoints?: number;
   isActive?: boolean;
   createdAt?: string;
+};
+
+export type DashboardTab =
+  | "overview"
+  | "orders"
+  | "favorites"
+  | "addresses"
+  | "settings";
+
+export type DashboardCustomer = {
+  name?: string;
+  email?: string;
+  phone?: string;
+  loyaltyPoints?: number;
+  token?: string;
+  [key: string]: unknown;
+};
+
+export type DashboardStats = {
+  totalOrders: number;
+  totalSpent: number;
+};
+
+export type DashboardProduct = {
+  _id: string;
+  name: string;
+  image?: string;
+  price?: number;
+  category?: string;
+  slug?: string;
+};
+
+export type DashboardOrderItem = {
+  name: string;
+  quantity: number;
+  price: number;
+  product?: DashboardProduct | string | null;
+};
+
+export type DashboardOrder = {
+  _id: string;
+  orderNumber: string;
+  status: "delivered" | "pending" | string;
+  createdAt: string;
+  items: DashboardOrderItem[];
+  subtotal: number;
+  tax: number;
+  deliveryFee: number;
+  totalAmount: number;
+  deliveryAddress?: string;
+};
+
+export type DashboardAddress = {
+  _id: string;
+  label: string;
+  address: string;
+  country?: string;
+  state?: string;
+  city?: string;
+  zipCode?: string;
+  isDefault: boolean;
+};
+
+export type DashboardFavoriteItem = {
+  _id: string;
+  name: string;
+  image?: string;
+  price?: number;
+  category?: string;
+  slug?: string;
+};
+
+export type DashboardAddressForm = {
+  label: string;
+  address: string;
+  country: string;
+  state: string;
+  city: string;
+  zipCode: string;
+  isDefault: boolean;
 };

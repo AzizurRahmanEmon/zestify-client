@@ -14,14 +14,10 @@ const ChefPage = async () => {
   ]);
 
   return (
-    <MainLayout
-      header={(home as any)?.header}
-      insta={(home as any)?.insta}
-      footer={(home as any)?.footer}
-    >
+    <MainLayout header={home?.header} insta={home?.insta} footer={home?.footer}>
       <BreadcrumbSection title="Our Chefs" />
       <TeamAboutSection />
-      <TeamSection main members={chefs as any} />
+      <TeamSection main members={chefs} />
       <TeamValueSection />
       <CtaSection3 />
     </MainLayout>

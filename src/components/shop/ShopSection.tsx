@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import type { ChangeEvent } from "react";
 import ProductCard from "./ProductCard";
 import ShopSearchForm from "@/components/form/ShopSearchForm";
@@ -61,12 +61,7 @@ const ShopSection = ({ products }: Props) => {
     clearAllShopFilters,
   } = useShopFilters(products);
 
-  // Price filter slider
-  useEffect(() => {
-    updateSliderRange();
-  }, [shopMinPrice, shopMaxPrice]);
-
-  const updateSliderRange = () => {
+  const updateSliderRange = useCallback(() => {
     const min = 0;
     const max = 99;
     const percent1 = ((shopMinPrice - min) / (max - min)) * 100;
@@ -77,7 +72,12 @@ const ShopSection = ({ products }: Props) => {
       sliderRange.style.left = `${percent1}%`;
       sliderRange.style.width = `${percent2 - percent1}%`;
     }
-  };
+  }, [shopMinPrice, shopMaxPrice]);
+
+  // Price filter slider
+  useEffect(() => {
+    updateSliderRange();
+  }, [updateSliderRange]);
 
   const handleMinChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
@@ -216,7 +216,14 @@ const ShopSection = ({ products }: Props) => {
                   <select
                     value={shopSelectedSort}
                     onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                      setShopSelectedSort(e.target.value as any)
+                      setShopSelectedSort(
+                        e.target.value as
+                          | ""
+                          | "popularity"
+                          | "rating"
+                          | "price-low-high"
+                          | "price-high-low",
+                      )
                     }
                     className="bg-transparent border border-[#797979] h-14 px-9 rounded-md outline-none focus:border-zPink w-full text-textColor pr-10 appearance-none"
                   >

@@ -1,5 +1,10 @@
 import { request } from "@/lib/api";
 
+type ApiEnvelope<T> = {
+  success: boolean;
+  data: T;
+};
+
 export type Partner = {
   _id?: string;
   icon: string;
@@ -15,8 +20,10 @@ export async function getPartners(
   if (params.isActive !== undefined)
     query.set("isActive", String(params.isActive));
   if (params.limit) query.set("limit", String(params.limit));
-  const data = await request<{ success: boolean; data: Partner[] }>(
+  const data = await request<Partner[] | ApiEnvelope<Partner[]>>(
     `/partners?${query.toString()}`,
   );
-  return ((data as any)?.data ?? data) as Partner[];
+  return typeof data === "object" && data !== null && "data" in data
+    ? data.data
+    : data;
 }

@@ -19,6 +19,7 @@ export type ServicesResponse = {
 
 export type ServicesParams = {
   isActive?: boolean;
+  limit?: number;
 };
 
 export async function getServices(
@@ -27,6 +28,7 @@ export async function getServices(
   const query = new URLSearchParams();
   if (params.isActive !== undefined)
     query.set("isActive", String(params.isActive));
+  if (params.limit) query.set("limit", String(params.limit));
 
   const qs = query.toString();
   const path = `/services${qs ? `?${qs}` : ""}`;
@@ -50,8 +52,8 @@ export async function getService(id: string): Promise<Service | null> {
       return data;
     }
     return data.data || null;
-  } catch (e: any) {
-    if (e?.message?.includes("404")) return null;
-    throw e;
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message.includes("404")) return null;
+    throw error;
   }
 }

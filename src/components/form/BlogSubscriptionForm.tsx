@@ -3,10 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
 import { API_URL } from "@/lib/api";
 
-const TENANT_ID =
-  process.env.NEXT_PUBLIC_TENANT_ID ||
-  process.env.NEXT_PUBLIC_TENANT_SLUG ||
-  "";
+const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || "";
 
 // Constants
 const ALERT_DURATION = 4000;

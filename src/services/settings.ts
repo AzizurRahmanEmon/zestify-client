@@ -1,5 +1,10 @@
 import { request } from "@/lib/api";
 
+type ApiEnvelope<T> = {
+  success: boolean;
+  data: T;
+};
+
 export type Settings = {
   restaurantName?: string;
   email?: string;
@@ -26,6 +31,8 @@ export type Settings = {
 };
 
 export async function getSettings(): Promise<Settings> {
-  const data = await request<{ success: boolean; data: Settings }>(`/settings`);
-  return ((data as any)?.data ?? data) as Settings;
+  const data = await request<Settings | ApiEnvelope<Settings>>(`/settings`);
+  return typeof data === "object" && data !== null && "data" in data
+    ? data.data
+    : data;
 }

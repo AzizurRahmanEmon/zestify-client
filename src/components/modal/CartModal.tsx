@@ -14,7 +14,7 @@ const CartModal = ({ isCartModalOpen, closeCartModal }: Props) => {
   const formatPrice = (value: number) => value.toFixed(2);
 
   const handleCheckout = () => {
-    const customer = getCurrentCustomer() as any;
+    const customer = getCurrentCustomer();
     if (!customer?.token) {
       toast.error("Please login to proceed with checkout.", {
         autoClose: 4000,

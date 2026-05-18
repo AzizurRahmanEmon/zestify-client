@@ -29,7 +29,8 @@ const HeaderSection = ({
     totalWishlistQuantity,
     toggleMobileMenu,
   } = useCustomContext();
-  const [customer, setCustomer] = useState<any>(null);
+  const [customer, setCustomer] =
+    useState<ReturnType<typeof getCurrentCustomer>>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
   useEffect(() => {
@@ -80,7 +81,7 @@ const HeaderSection = ({
           </div>
           <div className="bg-white h-[calc(100%-50px)] lg:h-[calc(100%-65px)] flex justify-end 2xl:justify-between items-center 2xl:px-20 lg:px-10 px-7.5">
             <div className="main-menu" id="mainMenu">
-              <MainMenuArea />
+              <MainMenuArea isLoggedIn={!!customer} />
               <div className="flex items-center gap-6">
                 <HeaderSearchForm />
                 <div className="flex items-center gap-6">

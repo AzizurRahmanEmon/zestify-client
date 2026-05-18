@@ -1,18 +1,14 @@
 import {
   getProducts as libGetProducts,
   getFeaturedProducts as libGetFeatured,
+  type GetProductsParams,
 } from "@/lib/api";
 import type { ProductDataType } from "@/types";
 
 export async function getProducts(
-  params: {
-    isActive?: boolean;
-    limit?: number;
-    category?: string;
-    isFeatured?: boolean;
-  } = {},
+  params: GetProductsParams = {},
 ): Promise<ProductDataType[]> {
-  return libGetProducts(params as any);
+  return libGetProducts(params);
 }
 
 export async function getFeaturedProducts(): Promise<ProductDataType[]> {

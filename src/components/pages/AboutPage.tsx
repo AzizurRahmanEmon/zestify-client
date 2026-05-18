@@ -17,18 +17,14 @@ const AboutPage = async () => {
   ]);
 
   return (
-    <MainLayout
-      header={(home as any)?.header}
-      insta={(home as any)?.insta}
-      footer={(home as any)?.footer}
-    >
+    <MainLayout header={home?.header} insta={home?.insta} footer={home?.footer}>
       <BreadcrumbSection title="About Us" />
       <AboutSection variant />
       <AboutServiceSection />
-      <VideoSection bgImg="/assets/img/about-video-bg.png" />
-      <TeamSection members={chefs as any} />
+      <VideoSection bgImg="/assets/img/about-video.png" />
+      <TeamSection members={chefs} />
       <CompanySection
-        partners={(partners as Partner[]).map((p) => ({
+        partners={partners.map((p: Partner) => ({
           icon: p.icon,
           width: p.width,
           height: p.height,

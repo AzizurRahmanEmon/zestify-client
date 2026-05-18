@@ -1,6 +1,6 @@
 import BlogDetailPage from "@/components/pages/BlogDetailPage";
 import type { Metadata } from "next";
-import { getBlogByLink, getBlogsList } from "@/services/blogs";
+import { getBlogByLink, getBlogsList, type Blog } from "@/services/blogs";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -9,7 +9,9 @@ function getParam(sp: SearchParams, key: string) {
   return Array.isArray(v) ? v[0] : v;
 }
 
-function buildSidebarMeta(blogs: any[]) {
+type SidebarCategory = { name: string; count: number };
+
+function buildSidebarMeta(blogs: Blog[]) {
   const categoryMap = new Map<string, number>();
   const tagSet = new Set<string>();
   for (const b of blogs) {
@@ -22,7 +24,7 @@ function buildSidebarMeta(blogs: any[]) {
       if (tag) tagSet.add(tag);
     }
   }
-  const categories = Array.from(categoryMap.entries())
+  const categories: SidebarCategory[] = Array.from(categoryMap.entries())
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
   const tags = Array.from(tagSet.values()).sort((a, b) => a.localeCompare(b));
@@ -75,7 +77,14 @@ export default async function Home({
 
   const hasActiveFilters = !!(search || category || tagsSelected.length > 0);
 
-  const [filtered, meta] = await Promise.all([
+  const emptyList = { blogs: [] as Blog[], page: 1, pages: 1, total: 0 };
+  const emptyMeta = {
+    categories: [] as SidebarCategory[],
+    tags: [] as string[],
+    latestPosts: [] as Blog[],
+  };
+
+  const [filteredResult, meta] = await Promise.all([
     hasActiveFilters
       ? getBlogsList({
           status: "published",
@@ -85,8 +94,8 @@ export default async function Home({
           page,
           limit: 8,
           sort,
-        }).catch(() => ({ blogs: [], pages: 1, page: 1, total: 0 }))
-      : Promise.resolve({ blogs: [], pages: 1, page: 1, total: 0 }),
+        }).catch(() => emptyList)
+      : Promise.resolve(emptyList),
     getBlogsList({
       status: "published",
       page: 1,
@@ -94,17 +103,17 @@ export default async function Home({
       sort: "date-desc",
     })
       .then((r) => buildSidebarMeta(r.blogs))
-      .catch(() => ({ categories: [], tags: [], latestPosts: [] })),
+      .catch(() => emptyMeta),
   ]);
 
   return (
     <BlogDetailPage
-      blogInfo={blogInfo as any}
-      filteredPosts={filtered.blogs as any}
-      totalPages={filtered.pages}
-      categories={meta.categories as any}
-      tags={meta.tags as any}
-      latestPosts={meta.latestPosts as any}
+      blogInfo={blogInfo}
+      filteredPosts={filteredResult.blogs}
+      totalPages={filteredResult.pages}
+      categories={meta.categories}
+      tags={meta.tags}
+      latestPosts={meta.latestPosts}
     />
   );
 }

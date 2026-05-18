@@ -1,17 +1,40 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+
+const counterData = [
+  { id: 1, number: 1567, label: "New Cool Projects" },
+  { id: 2, number: 634, label: "Total Awards Win" },
+  { id: 3, number: 1520, label: "Unique Specialities" },
+  { id: 4, number: 1235, label: "Hard Team Members" },
+];
 
 const CounterSection = () => {
   const [counters, setCounters] = useState([0, 0, 0, 0]);
   const [hasAnimated, setHasAnimated] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
-  const counterData = [
-    { id: 1, number: 1567, label: "New Cool Projects" },
-    { id: 2, number: 634, label: "Total Awards Win" },
-    { id: 3, number: 1520, label: "Unique Specialities" },
-    { id: 4, number: 1235, label: "Hard Team Members" },
-  ];
+  const animateCounters = useCallback(() => {
+    counterData.forEach((item, index) => {
+      let start = 0;
+      const end = item.number;
+      const duration = 2000;
+      const increment = end / (duration / 16);
+
+      const timer = setInterval(() => {
+        start += increment;
+        if (start >= end) {
+          start = end;
+          clearInterval(timer);
+        }
+
+        setCounters((prev) => {
+          const newCounters = [...prev];
+          newCounters[index] = Math.floor(start);
+          return newCounters;
+        });
+      }, 16);
+    });
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -37,30 +60,7 @@ const CounterSection = () => {
       }
       observer.disconnect();
     };
-  }, [hasAnimated]);
-
-  const animateCounters = () => {
-    counterData.forEach((item, index) => {
-      let start = 0;
-      const end = item.number;
-      const duration = 2000;
-      const increment = end / (duration / 16);
-
-      const timer = setInterval(() => {
-        start += increment;
-        if (start >= end) {
-          start = end;
-          clearInterval(timer);
-        }
-
-        setCounters((prev) => {
-          const newCounters = [...prev];
-          newCounters[index] = Math.floor(start);
-          return newCounters;
-        });
-      }, 16);
-    });
-  };
+  }, [hasAnimated, animateCounters]);
 
   return (
     <section

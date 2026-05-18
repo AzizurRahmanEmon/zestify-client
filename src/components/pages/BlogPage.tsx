@@ -1,6 +1,6 @@
 import MainLayout from "@/components/layout/MainLayout";
 import BreadcrumbSection from "@/components/breadcrumb/BreadcrumbSection";
-import BlogSection4 from "@/components/blog/BlogSection4";
+import BlogSection2 from "@/components/blog/BlogSection2";
 
 type BlogListItem = {
   _id: string;
@@ -22,11 +22,17 @@ type Props = {
   latestPosts: BlogListItem[];
 };
 
-const BlogPage = ({ posts, totalPages, categories, tags, latestPosts }: Props) => {
+const BlogPage = ({
+  posts,
+  totalPages,
+  categories,
+  tags,
+  latestPosts,
+}: Props) => {
   return (
     <MainLayout>
       <BreadcrumbSection title="Blog" />
-      <BlogSection4
+      <BlogSection2
         posts={posts}
         totalPages={totalPages}
         categories={categories}

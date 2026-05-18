@@ -1,7 +1,8 @@
 type CustomerLike = {
   name: string;
   email: string;
-  [k: string]: any;
+  token?: string;
+  [k: string]: unknown;
 };
 
 const KEY = "zestify_customer";

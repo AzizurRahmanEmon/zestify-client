@@ -16,8 +16,8 @@ export async function getTestimonials(
   if (params.isActive !== undefined)
     query.set("isActive", String(params.isActive));
   if (params.limit) query.set("limit", String(params.limit));
-  const data = await request<{ success: boolean; data: Testimonial[] }>(
+  const data = await request<Testimonial[] | { data?: Testimonial[] }>(
     `/testimonials?${query.toString()}`,
   );
-  return ((data as any)?.data ?? data) as Testimonial[];
+  return Array.isArray(data) ? data : Array.isArray(data.data) ? data.data : [];
 }

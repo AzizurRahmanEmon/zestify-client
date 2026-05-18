@@ -2,7 +2,7 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 export const useBlogFilters = () => {
   const router = useRouter();
@@ -12,8 +12,10 @@ export const useBlogFilters = () => {
   // Get values from URL
   const blogSearchTerm = searchParams?.get("search") ?? "";
   const blogSelectedCategory = searchParams?.get("category") ?? "";
-  const blogSelectedTags =
-    searchParams?.get("tags")?.split(",").filter(Boolean) ?? [];
+  const blogSelectedTags = useMemo(
+    () => searchParams?.get("tags")?.split(",").filter(Boolean) ?? [],
+    [searchParams],
+  );
   const blogCurrentPage = parseInt(searchParams?.get("page") ?? "1");
 
   // Constants

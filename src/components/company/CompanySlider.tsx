@@ -9,6 +9,7 @@ interface Partner {
   icon: string;
   width: number;
   height: number;
+  _id?: string;
 }
 interface Props {
   style?: string;
@@ -60,8 +61,8 @@ const CompanySlider = ({ style, partners }: Props) => {
       }}
       modules={[Autoplay]}
     >
-      {items.map((item: any, idx: number) => (
-        <SwiperSlide key={item.id ?? idx}>
+      {items.map((item: Partner, index: number) => (
+        <SwiperSlide key={index}>
           <div
             className={`relative my-2 flex items-center justify-center border border-black p-6 h-36 w-36 bg-white/50 transition-all duration-300 ease-in-out ${
               style === "style-2"

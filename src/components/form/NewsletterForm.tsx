@@ -6,10 +6,7 @@ import { API_URL } from "@/lib/api";
 // Constants
 const ALERT_DURATION = 4000;
 
-const TENANT_ID =
-  process.env.NEXT_PUBLIC_TENANT_ID ||
-  process.env.NEXT_PUBLIC_TENANT_SLUG ||
-  "";
+const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || "";
 
 const NewsletterForm = () => {
   const [email, setEmail] = useState("");
@@ -115,10 +112,14 @@ const NewsletterForm = () => {
           autoClose: ALERT_DURATION,
         });
         setEmail("");
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const message =
+          e instanceof Error
+            ? e.message
+            : "Subscription failed. Please try again.";
         setAlert({
           type: "danger",
-          message: e?.message || "Subscription failed. Please try again.",
+          message,
         });
         toast.error("Subscription failed.", { autoClose: ALERT_DURATION });
       } finally {

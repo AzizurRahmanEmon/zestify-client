@@ -9,10 +9,7 @@ import { API_URL } from "@/lib/api";
 // Constants
 const ALERT_DURATION = 4000;
 
-const TENANT_ID =
-  process.env.NEXT_PUBLIC_TENANT_ID ||
-  process.env.NEXT_PUBLIC_TENANT_SLUG ||
-  "";
+const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID;
 
 interface FormData {
   username: string;
@@ -250,10 +247,14 @@ const RegisterForm = () => {
           autoClose: ALERT_DURATION,
         });
         router.push("/dashboard");
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Registration failed. Please try again.";
         setAlert({
           type: "danger",
-          message: error?.message || "Registration failed. Please try again.",
+          message,
         });
         toast.error("Something went wrong. Please try again.", {
           autoClose: ALERT_DURATION,
@@ -262,7 +263,7 @@ const RegisterForm = () => {
         setIsLoading(false);
       }
     },
-    [formData, validateEmail, focusField],
+    [formData, validateEmail, focusField, router],
   );
 
   return (

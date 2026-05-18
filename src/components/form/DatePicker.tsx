@@ -23,7 +23,7 @@ const DatePicker = ({
   placeholder = "Select date",
   id,
   name,
-  transparentBg = false,
+  transparentBg: _transparentBg = false,
   className = "",
 }: DatePickerProps) => {
   const [isOpen, setIsOpen] = useState(false);

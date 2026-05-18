@@ -14,13 +14,52 @@ import { getFeaturedProducts, getProducts } from "@/services/products";
 import { getHomePage } from "@/services/pages";
 import { getChefs } from "@/services/chefs";
 import { getPartners, type Partner as PartnerType } from "@/services/partners";
-import {
-  getTestimonials,
-  type Testimonial as TestimonialType,
-} from "@/services/testimonials";
+import { getTestimonials } from "@/services/testimonials";
 import { getBlogs } from "@/services/blogs";
 import { getSettings } from "@/services/settings";
 import type { ProductDataType } from "@/types";
+
+type HeroSection = {
+  backgroundImage?: string;
+  subtitle?: string;
+  title?: string;
+  description?: string;
+  buttonText?: string;
+  buttonLink?: string;
+};
+
+type TextSection = {
+  title?: string;
+  subtitle?: string;
+};
+
+type AboutSectionContent = TextSection & {
+  list?: string[];
+  image1?: string;
+  image2?: string;
+  videoPoster?: string;
+  videoUrl?: string;
+};
+
+type CtaSectionContent = {
+  leftText?: string;
+  rightText?: string;
+  leftBg?: string;
+  rightBg?: string;
+};
+
+type VideoSectionContent = {
+  bgImg?: string;
+  videoUrl?: string;
+};
+
+type CompanySectionContent = {
+  title?: string;
+};
+
+type ReservationSectionContent = TextSection & {
+  bgImg?: string;
+};
 
 async function getHomeBlogs() {
   const published = await getBlogs({
@@ -52,8 +91,27 @@ const HomePage = async () => {
     getPartners({ isActive: true, limit: 12 }).catch(() => []),
     getTestimonials({ isActive: true, limit: 8 }).catch(() => []),
     getHomeBlogs(),
-    getSettings().catch(() => ({})),
+    getSettings().catch(() => null),
   ]);
+
+  const hero = home?.hero as HeroSection | undefined;
+  const about = home?.about as AboutSectionContent | undefined;
+  const cta = home?.cta as CtaSectionContent | undefined;
+  const bestSelling = home?.bestSelling as TextSection | undefined;
+  const popular = home?.popular as TextSection | undefined;
+  const menu = home?.menu as TextSection | undefined;
+  const team = home?.team as TextSection | undefined;
+  const company = home?.company as CompanySectionContent | undefined;
+  const video = home?.video as VideoSectionContent | undefined;
+  const testimony = home?.testimony as TextSection | undefined;
+  const reservation = home?.reservation as
+    | ReservationSectionContent
+    | undefined;
+  const blogSection = home?.blog as TextSection | undefined;
+
+  const businessHours = Array.isArray(settings?.businessHours)
+    ? settings.businessHours
+    : [];
 
   // Compute product groupings
   const menuProducts: ProductDataType[] = (featured || [])
@@ -74,11 +132,9 @@ const HomePage = async () => {
       iconWidth: 19,
       iconHeight: 31,
       title: "Phone Number",
-      content: (settings as any)?.phone || "+(124) 566-7890",
+      content: settings?.phone || "+(124) 566-7890",
       isLink: true,
-      href: (settings as any)?.phone
-        ? `tel:${(settings as any).phone}`
-        : "tel:+(124)566-7890",
+      href: settings?.phone ? `tel:${settings.phone}` : "tel:+(124)566-7890",
     },
     {
       id: 2,
@@ -86,10 +142,10 @@ const HomePage = async () => {
       iconWidth: 26,
       iconHeight: 18,
       title: "Email Address",
-      content: (settings as any)?.email || "info@example.com",
+      content: settings?.email || "info@example.com",
       isLink: true,
-      href: (settings as any)?.email
-        ? `mailto:${(settings as any).email}`
+      href: settings?.email
+        ? `mailto:${settings.email}`
         : "mailto:info@example.com",
     },
     {
@@ -99,8 +155,7 @@ const HomePage = async () => {
       iconHeight: 28,
       title: "Location",
       content:
-        (settings as any)?.address ||
-        "1403 Washington Ave, New Orleans, LA 70130",
+        settings?.address || "1403 Washington Ave, New Orleans, LA 70130",
       isLink: false,
     },
     {
@@ -109,14 +164,12 @@ const HomePage = async () => {
       iconWidth: 19,
       iconHeight: 31,
       title: "Work Hours",
-      content:
-        Array.isArray((settings as any)?.businessHours) &&
-        (settings as any).businessHours.length
-          ? (settings as any).businessHours
-              .filter((d: any) => !d.isClosed)
-              .map((d: any) => `${d.day}: ${d.open} - ${d.close}`)
-              .join(" | ")
-          : "7.00 AM - 11.15 PM",
+      content: businessHours.length
+        ? businessHours
+            .filter((d) => !d.isClosed)
+            .map((d) => `${d.day}: ${d.open} - ${d.close}`)
+            .join(" | ")
+        : "7.00 AM - 11.15 PM",
       isLink: false,
     },
   ];
@@ -144,12 +197,12 @@ const HomePage = async () => {
         return (
           <BannerSection
             key="hero"
-            backgroundImage={home?.hero?.backgroundImage}
-            subtitle={home?.hero?.subtitle}
-            title={home?.hero?.title}
-            description={home?.hero?.description}
-            buttonText={home?.hero?.buttonText}
-            buttonLink={home?.hero?.buttonLink}
+            backgroundImage={hero?.backgroundImage}
+            subtitle={hero?.subtitle}
+            title={hero?.title}
+            description={hero?.description}
+            buttonText={hero?.buttonText}
+            buttonLink={hero?.buttonLink}
           />
         );
       case "popular":
@@ -157,25 +210,25 @@ const HomePage = async () => {
           <PopularProductSection
             key="popular"
             products={popularProducts}
-            title={home?.popular?.title}
-            subtitle={home?.popular?.subtitle}
+            title={popular?.title}
+            subtitle={popular?.subtitle}
           />
         );
       case "about":
         return (
           <AboutSection
             key="about"
-            subtitle={home?.about?.subtitle}
-            title={home?.about?.title}
-            list={home?.about?.list}
-            image1={home?.about?.image1}
-            image2={home?.about?.image2}
-            videoPoster={home?.about?.videoPoster}
-            videoUrl={home?.about?.videoUrl}
-            ctaLeftText={home?.cta?.leftText}
-            ctaRightText={home?.cta?.rightText}
-            ctaLeftBg={home?.cta?.leftBg}
-            ctaRightBg={home?.cta?.rightBg}
+            subtitle={about?.subtitle}
+            title={about?.title}
+            list={about?.list}
+            image1={about?.image1}
+            image2={about?.image2}
+            videoPoster={about?.videoPoster}
+            videoUrl={about?.videoUrl}
+            ctaLeftText={cta?.leftText}
+            ctaRightText={cta?.rightText}
+            ctaLeftBg={cta?.leftBg}
+            ctaRightBg={cta?.rightBg}
           />
         );
       case "bestSelling":
@@ -183,8 +236,8 @@ const HomePage = async () => {
           <BestSellingProductSection
             key="bestSelling"
             products={bestSellingProducts}
-            title={home?.bestSelling?.title}
-            subtitle={home?.bestSelling?.subtitle}
+            title={bestSelling?.title}
+            subtitle={bestSelling?.subtitle}
           />
         );
       case "menu":
@@ -192,25 +245,25 @@ const HomePage = async () => {
           <MenuSection
             key="menu"
             products={menuProducts}
-            title={home?.menu?.title}
-            subtitle={home?.menu?.subtitle}
+            title={menu?.title}
+            subtitle={menu?.subtitle}
           />
         );
       case "team":
         return (
           <TeamSection
             key="team"
-            title={home?.team?.title}
-            subtitle={home?.team?.subtitle}
-            members={chefs as any}
+            title={team?.title}
+            subtitle={team?.subtitle}
+            members={chefs}
           />
         );
       case "company":
         return (
           <CompanySection
             key="company"
-            title={(home as any)?.company?.title}
-            partners={(partners as PartnerType[]).map((p) => ({
+            title={company?.title}
+            partners={partners.map((p: PartnerType) => ({
               icon: p.icon,
               width: p.width,
               height: p.height,
@@ -221,26 +274,26 @@ const HomePage = async () => {
         return (
           <VideoSection
             key="video"
-            bgImg={home?.video?.bgImg || "/assets/img/video-bg.webp"}
-            videoUrl={home?.video?.videoUrl}
+            bgImg={video?.bgImg || "/assets/img/video-bg.webp"}
+            videoUrl={video?.videoUrl}
           />
         );
       case "testimony":
         return (
           <TestimonySection
             key="testimony"
-            items={testimonials as TestimonialType[]}
-            title={home?.testimony?.title}
-            subtitle={home?.testimony?.subtitle}
+            items={testimonials}
+            title={testimony?.title}
+            subtitle={testimony?.subtitle}
           />
         );
       case "reservation":
         return (
           <ReservationSection
             key="reservation"
-            title={home?.reservation?.title}
-            subtitle={home?.reservation?.subtitle}
-            bgImg={home?.reservation?.bgImg}
+            title={reservation?.title}
+            subtitle={reservation?.subtitle}
+            bgImg={reservation?.bgImg}
             contactInfo={reservationContact}
           />
         );
@@ -248,15 +301,9 @@ const HomePage = async () => {
         return (
           <BlogSection
             key="blog"
-            blogs={(blogs as any[])?.map((b) => ({
-              id: b._id,
-              _id: b._id,
-              title: b.title,
-              img: b.img,
-              link: b.link || b._id,
-            }))}
-            title={home?.blog?.title}
-            subtitle={home?.blog?.subtitle}
+            blogs={blogs}
+            title={blogSection?.title}
+            subtitle={blogSection?.subtitle}
           />
         );
       default:
@@ -264,11 +311,7 @@ const HomePage = async () => {
     }
   });
   return (
-    <MainLayout
-      header={(home as any)?.header}
-      insta={(home as any)?.insta}
-      footer={(home as any)?.footer}
-    >
+    <MainLayout header={home?.header} insta={home?.insta} footer={home?.footer}>
       {sections}
     </MainLayout>
   );

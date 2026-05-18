@@ -5,10 +5,7 @@ import { toast } from "react-toastify";
 import { API_URL } from "@/lib/api";
 import { setCurrentCustomer } from "@/lib/auth";
 
-const TENANT_ID =
-  process.env.NEXT_PUBLIC_TENANT_ID ||
-  process.env.NEXT_PUBLIC_TENANT_SLUG ||
-  "";
+const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || "";
 
 const ALERT_DURATION = 4000;
 
@@ -116,8 +113,12 @@ const VerifyOtpForm = () => {
         autoClose: ALERT_DURATION,
       });
       router.push("/dashboard");
-    } catch (error: any) {
-      toast.error(error?.message || "Verification failed. Please try again.", {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Verification failed. Please try again.";
+      toast.error(message, {
         autoClose: ALERT_DURATION,
       });
     } finally {
@@ -148,8 +149,10 @@ const VerifyOtpForm = () => {
         autoClose: ALERT_DURATION,
       });
       setCountdown(60);
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to resend code.", {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Failed to resend code.";
+      toast.error(message, {
         autoClose: ALERT_DURATION,
       });
     } finally {

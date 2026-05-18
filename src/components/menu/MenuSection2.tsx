@@ -70,7 +70,7 @@ const MenuSection2 = ({
             </div>
 
             <div className="space-y-6 pt-8">
-              {coffeeDisplay.map((item: any, index: number) => (
+              {coffeeDisplay.map((item, index) => (
                 <div
                   key={item.id}
                   className="group relative bg-white/70 backdrop-blur-sm rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-700 hover:-translate-y-2 border border-gray-200/50 hover:border-pink-300/50"
@@ -188,7 +188,7 @@ const MenuSection2 = ({
             </div>
 
             <div className="space-y-6 overflow-hidden pt-8">
-              {grillDisplay.map((item: any, index: number) => (
+              {grillDisplay.map((item, index) => (
                 <div
                   key={item.id}
                   className="group relative bg-white/70 backdrop-blur-sm rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-700 hover:-translate-y-2 border border-gray-200/50 hover:border-orange-300/50"

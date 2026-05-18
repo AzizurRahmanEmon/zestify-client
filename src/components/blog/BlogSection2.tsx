@@ -25,7 +25,7 @@ type Props = {
   latestPosts: BlogListItem[];
 };
 
-const BlogSection4 = ({
+const BlogSection2 = ({
   posts,
   totalPages,
   categories,
@@ -189,4 +189,4 @@ const BlogSection4 = ({
   );
 };
 
-export default BlogSection4;
+export default BlogSection2;

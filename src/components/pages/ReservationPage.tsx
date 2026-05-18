@@ -5,12 +5,12 @@ import ReservationSection2 from "@/components/reservation/ReservationSection2";
 import { getSettings } from "@/services/settings";
 
 const ReservationPage = async () => {
-  const [settings] = await Promise.all([getSettings().catch(() => ({}))]);
+  const [settings] = await Promise.all([getSettings().catch(() => null)]);
   return (
     <MainLayout>
       <BreadcrumbSection title="Reservation" />
       <ReservationSection2 />
-      <ContactSection2 settings={settings as any} />
+      <ContactSection2 settings={settings ?? undefined} />
     </MainLayout>
   );
 };

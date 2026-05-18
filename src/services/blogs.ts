@@ -77,6 +77,17 @@ function mapBlog(b: Blog): Blog {
   };
 }
 
+function isBlog(value: unknown): value is Blog {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "_id" in value &&
+    "title" in value &&
+    "img" in value &&
+    "link" in value
+  );
+}
+
 async function fetchJson<T>(path: string): Promise<T> {
   return request<T>(path);
 }
@@ -101,11 +112,11 @@ export async function getBlogs(
     limit: params.limit ? String(params.limit) : undefined,
     sort: normalizeSort(params.sort),
   });
-  const json = await fetchJson<BlogListResponse>(path);
-  const data = Array.isArray((json as any)?.data)
-    ? ((json as any).data as Blog[])
-    : Array.isArray(json)
-      ? (json as Blog[])
+  const json = await fetchJson<BlogListResponse | Blog[]>(path);
+  const data = Array.isArray(json)
+    ? json
+    : Array.isArray(json.data)
+      ? json.data
       : [];
   return data.map(mapBlog);
 }
@@ -151,19 +162,19 @@ export async function getBlogsList(
           limit: String(limit),
         });
 
-  const json = await fetchJson<BlogListResponse>(path);
-  const data = Array.isArray((json as any)?.data)
-    ? ((json as any).data as Blog[])
-    : Array.isArray(json)
-      ? (json as Blog[])
+  const json = await fetchJson<BlogListResponse | Blog[]>(path);
+  const data = Array.isArray(json)
+    ? json
+    : Array.isArray(json.data)
+      ? json.data
       : [];
   const pages =
-    typeof (json as any)?.pages === "number" && (json as any).pages > 0
-      ? (json as any).pages
+    !Array.isArray(json) && typeof json.pages === "number" && json.pages > 0
+      ? json.pages
       : 1;
   const total =
-    typeof (json as any)?.total === "number"
-      ? (json as any).total
+    !Array.isArray(json) && typeof json.total === "number"
+      ? json.total
       : data.length;
   return { blogs: data.map(mapBlog), page, pages, total };
 }
@@ -172,11 +183,11 @@ export async function getFeaturedBlogs(limit = 5): Promise<Blog[]> {
   const path = buildBlogsPath("/blogs/featured", {
     limit: String(Math.min(limit, 100)),
   });
-  const json = await fetchJson<{ success: boolean; data?: Blog[] }>(path);
-  const data = Array.isArray((json as any)?.data)
-    ? ((json as any).data as Blog[])
-    : Array.isArray(json)
-      ? (json as Blog[])
+  const json = await fetchJson<{ data?: Blog[] } | Blog[]>(path);
+  const data = Array.isArray(json)
+    ? json
+    : Array.isArray(json.data)
+      ? json.data
       : [];
   return data.map(mapBlog);
 }
@@ -184,11 +195,14 @@ export async function getFeaturedBlogs(limit = 5): Promise<Blog[]> {
 export async function getBlogByLink(link: string): Promise<Blog | null> {
   if (!link) return null;
   try {
-    const json = await fetchJson<{ success: boolean; data?: Blog }>(
+    const json = await fetchJson<{ data?: Blog } | Blog>(
       `/blogs/link/${encodeURIComponent(link)}`,
     );
-    const blog = ((json as any)?.data ?? json) as Blog | undefined;
-    return blog ? mapBlog(blog) : null;
+    const blog =
+      typeof json === "object" && json !== null && "data" in json
+        ? json.data
+        : json;
+    return isBlog(blog) ? mapBlog(blog) : null;
   } catch {
     return null;
   }

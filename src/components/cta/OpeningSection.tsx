@@ -9,6 +9,8 @@ interface CountdownTime {
   seconds: number;
 }
 
+const TARGET_DATE = new Date("2025-12-31T23:59:59");
+
 const calculateTimeLeft = (targetDate: Date): CountdownTime => {
   const now = new Date();
   const difference = targetDate.getTime() - now.getTime();
@@ -26,19 +28,18 @@ const calculateTimeLeft = (targetDate: Date): CountdownTime => {
 };
 
 const OpeningSection: React.FC = () => {
-  const targetDate = new Date("2025-12-31T23:59:59");
   const [timeLeft, setTimeLeft] = useState<CountdownTime | null>(null);
   const [prevTimeLeft, setPrevTimeLeft] = useState<CountdownTime | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => {
     setIsMounted(true);
-    const initialTime = calculateTimeLeft(targetDate);
+    const initialTime = calculateTimeLeft(TARGET_DATE);
     setTimeLeft(initialTime);
     setPrevTimeLeft(initialTime);
 
     const timer = setInterval(() => {
       setTimeLeft((prevTime) => {
-        const newTime = calculateTimeLeft(targetDate);
+        const newTime = calculateTimeLeft(TARGET_DATE);
         setPrevTimeLeft(prevTime);
         return newTime;
       });

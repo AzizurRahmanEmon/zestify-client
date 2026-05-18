@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   description:
     "Meet the talented culinary team at Zestify. Our chefs bring passion, creativity, and expertise to every dish.",
 };
+
 export default function Home() {
   return <ChefPage />;
 }

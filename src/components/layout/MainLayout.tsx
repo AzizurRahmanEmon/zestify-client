@@ -8,10 +8,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { API_URL } from "@/lib/api";
 
-const TENANT_ID =
-  process.env.NEXT_PUBLIC_TENANT_ID ||
-  process.env.NEXT_PUBLIC_TENANT_SLUG ||
-  "";
+const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || "";
 
 const InstagramSection = dynamic(
   () => import("@/components/social/InstagramSection"),

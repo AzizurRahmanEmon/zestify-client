@@ -3,9 +3,9 @@ import BreadcrumbSection from "@/components/breadcrumb/BreadcrumbSection";
 import MainLayout from "@/components/layout/MainLayout";
 import ServiceSection from "@/components/service/ServiceSection";
 import TeamDetailSection from "@/components/team/TeamDetailSection";
-import { TeamDataType } from "@/types";
+import type { Chef } from "@/services/chefs";
 interface Props {
-  chefInfo: TeamDataType;
+  chefInfo: Chef | null;
 }
 const ChefDetailPage = ({ chefInfo }: Props) => {
   return (

@@ -1,16 +1,44 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { headerMenuItems } from "@/data";
+import { getHeaderMenuItems } from "@/data";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 interface Props {
   style?: string;
   variant?: string;
+  isLoggedIn?: boolean;
 }
 
-const MainMenuArea = ({ style, variant }: Props) => {
+type MenuChild = {
+  href: string;
+  label: string;
+};
+
+type MenuItem =
+  | {
+      id: string;
+      label: string;
+      href: string;
+      children?: never;
+    }
+  | {
+      id: string;
+      label: string;
+      children: readonly MenuChild[];
+      href?: never;
+    };
+
+const hasHref = (item: MenuItem): item is Extract<MenuItem, { href: string }> =>
+  "href" in item;
+
+const hasChildren = (
+  item: MenuItem,
+): item is Extract<MenuItem, { children: readonly MenuChild[] }> =>
+  "children" in item;
+
+const MainMenuArea = ({ style, variant, isLoggedIn = false }: Props) => {
   const [isActiveDropdown, setIsActiveDropdown] = useState<string>("");
   const pathname = usePathname();
 
@@ -26,7 +54,10 @@ const MainMenuArea = ({ style, variant }: Props) => {
   };
 
   // Memoize menu items to avoid unnecessary re-renders
-  const memoizedMenuItems = useMemo(() => headerMenuItems, []);
+  const memoizedMenuItems = useMemo(
+    () => getHeaderMenuItems(isLoggedIn) as readonly MenuItem[],
+    [isLoggedIn],
+  );
 
   return (
     <ul
@@ -39,7 +70,7 @@ const MainMenuArea = ({ style, variant }: Props) => {
           key={item.id}
           className="relative group transition-all duration-300"
         >
-          {item.href ? (
+          {hasHref(item) ? (
             <Link
               href={item.href}
               className={`menu-link ${
@@ -82,13 +113,13 @@ const MainMenuArea = ({ style, variant }: Props) => {
             </button>
           )}
 
-          {item.children && (
+          {hasChildren(item) && (
             <ul
               className={`absolute left-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 ${
                 isActiveDropdown === item.id ? "opacity-100 visible" : ""
               }`}
             >
-              {item.children.map((child, index) => (
+              {item.children.map((child: MenuChild, index: number) => (
                 <li key={`${item.id}-${index}`}>
                   <Link
                     href={child.href}
