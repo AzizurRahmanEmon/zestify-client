@@ -2,8 +2,7 @@
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
-import { setCurrentCustomer } from "@/lib/auth";
-import { useRouter } from "next/navigation";
+import { setCurrentCustomer, clearCurrentCustomer } from "@/lib/auth";
 import { API_URL } from "@/lib/api";
 
 // Constants
@@ -18,7 +17,6 @@ interface FormData {
 }
 
 const LoginForm = () => {
-  const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
     email: "",
     password: "",
@@ -111,10 +109,10 @@ const LoginForm = () => {
         return;
       }
 
-      if (trimmedData.password.length < 6) {
+      if (trimmedData.password.length < 8) {
         setAlert({
           type: "danger",
-          message: "Password must be at least 6 characters long.",
+          message: "Password must be at least 8 characters long.",
         });
         toast.error("Password is too short.", { autoClose: ALERT_DURATION });
         focusField("password");
@@ -149,38 +147,30 @@ const LoginForm = () => {
           // If OTP is explicitly disabled via env, skip OTP redirect
           if (process.env.NEXT_PUBLIC_OTP_REQUIRED === "false") {
             const customer = json?.data ?? json;
-            setCurrentCustomer(customer);
-            setAlert({
-              type: "success",
-              message: "Login successful! Welcome back.",
-            });
+            clearCurrentCustomer();
+            setCurrentCustomer(customer, trimmedData.rememberMe);
             toast.success("Login successful! Welcome back.", {
               autoClose: ALERT_DURATION,
             });
-            router.push("/dashboard");
+            window.location.replace("/dashboard");
             return;
           }
 
           toast.success("Check your email for the verification code.", {
             autoClose: ALERT_DURATION,
           });
-          router.push(
-            `/verify-otp?email=${encodeURIComponent(trimmedData.email)}`,
-          );
+          window.location.href = `/verify-otp?email=${encodeURIComponent(trimmedData.email)}&remember=${trimmedData.rememberMe}`;
           return;
         }
 
         // Direct login (OTP disabled or already verified)
         const customer = json?.data ?? json;
-        setCurrentCustomer(customer);
-        setAlert({
-          type: "success",
-          message: "Login successful! Welcome back.",
-        });
+        clearCurrentCustomer();
+        setCurrentCustomer(customer, trimmedData.rememberMe);
         toast.success("Login successful! Welcome back.", {
           autoClose: ALERT_DURATION,
         });
-        router.push("/dashboard");
+        window.location.replace("/dashboard");
       } catch (error: unknown) {
         const message =
           error instanceof Error
@@ -197,7 +187,7 @@ const LoginForm = () => {
         setIsLoading(false);
       }
     },
-    [formData, validateEmail, focusField, router],
+    [formData, validateEmail, focusField],
   );
 
   return (

@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { API_URL } from "@/lib/api";
@@ -39,6 +39,8 @@ export interface CheckoutCustomerAddress {
 }
 
 export interface CheckoutCustomer {
+  _id?: string;
+  id?: string;
   token?: string;
   name?: string;
   email?: string;
@@ -67,7 +69,7 @@ const createInitialFormData = (): CheckoutFormData => ({
 
 export const useCheckoutForm = () => {
   const router = useRouter();
-  const { cartList, totalCartPrice } = useCustomContext();
+  const { cartList, totalCartPrice, clearCart } = useCustomContext();
   const [formData, setFormData] = useState<CheckoutFormData>(
     createInitialFormData(),
   );
@@ -170,7 +172,7 @@ export const useCheckoutForm = () => {
         },
         body: JSON.stringify({
           code: savedCoupon,
-          subtotal: Number(totalCartPrice || 0),
+          subtotal: subtotalRef.current,
         }),
       })
         .then((res) => res.json().catch(() => ({})))
@@ -202,7 +204,7 @@ export const useCheckoutForm = () => {
         });
       })
       .catch(() => null);
-  }, [totalCartPrice]);
+  }, []);
 
   useEffect(() => {
     if (!alert) return;
@@ -292,23 +294,63 @@ export const useCheckoutForm = () => {
   }, []);
 
   const subtotal = useMemo(() => Number(totalCartPrice || 0), [totalCartPrice]);
-
-  const loyaltyDiscountAmount = useMemo(() => {
-    return (
-      Math.max(0, Math.floor(loyaltyPointsToRedeem)) *
-      Number(loyaltyConfig.loyaltyPointValue || 1)
-    );
-  }, [loyaltyConfig.loyaltyPointValue, loyaltyPointsToRedeem]);
+  const subtotalRef = useRef(subtotal);
+  useEffect(() => {
+    subtotalRef.current = subtotal;
+  }, [subtotal]);
 
   const shippingFee = 10;
+
+  const maxRedeemablePoints = useMemo(() => {
+    const pointValue = Number(loyaltyConfig.loyaltyPointValue || 1);
+    const maxByOrder = Math.floor(
+      Math.max(0, subtotal + shippingFee - Math.max(0, couponDiscount)) /
+        pointValue,
+    );
+    return Math.min(availableLoyaltyPoints, maxByOrder);
+  }, [
+    availableLoyaltyPoints,
+    couponDiscount,
+    loyaltyConfig.loyaltyPointValue,
+    subtotal,
+  ]);
+
+  const loyaltyDiscountAmount = useMemo(() => {
+    const raw =
+      Math.max(0, Math.floor(loyaltyPointsToRedeem)) *
+      Number(loyaltyConfig.loyaltyPointValue || 1);
+    const maxAllowed = Math.max(
+      0,
+      subtotal + shippingFee - Math.max(0, couponDiscount),
+    );
+    return Math.min(raw, maxAllowed);
+  }, [
+    couponDiscount,
+    loyaltyConfig.loyaltyPointValue,
+    loyaltyPointsToRedeem,
+    subtotal,
+  ]);
+
   const orderTotal = useMemo(() => {
-    return (
+    return Math.max(
+      0,
       subtotal +
-      shippingFee -
-      Math.max(0, couponDiscount) -
-      loyaltyDiscountAmount
+        shippingFee -
+        Math.max(0, couponDiscount) -
+        loyaltyDiscountAmount,
     );
   }, [couponDiscount, loyaltyDiscountAmount, subtotal]);
+
+  const handleLoyaltyChange = useCallback(
+    (value: number) => {
+      const clamped = Math.max(
+        0,
+        Math.min(Math.floor(value || 0), availableLoyaltyPoints),
+      );
+      setLoyaltyPointsToRedeem(clamped);
+    },
+    [availableLoyaltyPoints],
+  );
 
   const applyCoupon = useCallback(async () => {
     if (!couponCode.trim()) {
@@ -489,7 +531,7 @@ export const useCheckoutForm = () => {
         return;
       }
 
-      if (!["stripe", "paypal"].includes(trimmedData.payment)) {
+      if (!["stripe", "paypal", "cod"].includes(trimmedData.payment)) {
         toast.info("This payment method is not enabled yet.");
         return;
       }
@@ -505,12 +547,6 @@ export const useCheckoutForm = () => {
 
       try {
         setIsSubmitting(true);
-        const paymentPath =
-          trimmedData.payment === "paypal"
-            ? "paypal/create-order"
-            : "stripe/create-checkout-session";
-        const gatewayLabel =
-          trimmedData.payment === "paypal" ? "PayPal" : "Stripe";
 
         if (!currentCustomer?.token) {
           toast.error("Please login to proceed with checkout.", {
@@ -519,6 +555,106 @@ export const useCheckoutForm = () => {
           router.push("/login");
           return;
         }
+
+        // Handle COD orders - create directly without payment gateway
+        if (trimmedData.payment === "cod") {
+          // Validate customer ID
+          const customerId = currentCustomer._id ?? currentCustomer.id;
+          if (!customerId || !/^[0-9a-fA-F]{24}$/.test(String(customerId))) {
+            toast.error("Invalid customer ID. Please log in again.", {
+              autoClose: ALERT_DURATION,
+            });
+            router.push("/login");
+            return;
+          }
+
+          // Validate cart items have valid product IDs
+          const orderItems = cartList
+            .map((item) => ({
+              productId: item._id,
+              quantity: item.quantity ?? 1,
+            }))
+            .filter((item) => {
+              if (!item.productId) {
+                return false;
+              }
+              // Validate MongoDB ObjectId format (24 hex characters)
+              if (!/^[0-9a-fA-F]{24}$/.test(String(item.productId))) {
+                return false;
+              }
+              return true;
+            });
+
+          if (orderItems.length === 0) {
+            toast.error(
+              "Cart items are invalid. Please clear cart and re-add products.",
+              {
+                autoClose: ALERT_DURATION,
+              },
+            );
+            return;
+          }
+
+          if (orderItems.length !== cartList.length) {
+            toast.error(
+              "Some cart items are invalid. Please clear cart and re-add products.",
+              {
+                autoClose: ALERT_DURATION,
+              },
+            );
+            return;
+          }
+
+          const requestBody: Record<string, unknown> = {
+            customerId,
+            items: orderItems,
+            deliveryType: "delivery",
+            deliveryAddress: `${trimmedData.address}, ${trimmedData.city}, ${trimmedData.state}, ${trimmedData.country} ${trimmedData.postalCode}`,
+            paymentMethod: "cash",
+            loyaltyPointsToRedeem,
+            notes: trimmedData.notes,
+          };
+
+          // Only include couponCode if it has a value
+          if (couponCode && couponCode.trim().length > 0) {
+            requestBody.couponCode = couponCode.trim();
+          }
+
+          const orderRes = await fetch(`${API_URL}/orders`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${currentCustomer.token}`,
+              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
+            },
+            body: JSON.stringify(requestBody),
+            cache: "no-store",
+          });
+
+          const orderJson = await orderRes.json().catch(() => ({}));
+
+          if (!orderRes.ok || orderJson?.success === false) {
+            const errorMessage = orderJson?.errors
+              ? `Validation failed: ${orderJson.errors.join(", ")}`
+              : orderJson?.message || "Failed to place COD order";
+            throw new Error(errorMessage);
+          }
+
+          toast.success("Order placed successfully!", {
+            autoClose: ALERT_DURATION,
+          });
+          clearCart();
+          router.push("/dashboard?tab=orders");
+          return;
+        }
+
+        // Handle Stripe/PayPal orders
+        const paymentPath =
+          trimmedData.payment === "paypal"
+            ? "paypal/create-order"
+            : "stripe/create-checkout-session";
+        const gatewayLabel =
+          trimmedData.payment === "paypal" ? "PayPal" : "Stripe";
 
         const res = await fetch(`${API_URL}/payments/${paymentPath}`, {
           method: "POST",
@@ -611,8 +747,10 @@ export const useCheckoutForm = () => {
     isFieldActive,
     isSubmitting,
     loyaltyConfig,
+    handleLoyaltyChange,
     loyaltyDiscountAmount,
     loyaltyPointsToRedeem,
+    maxRedeemablePoints,
     orderTotal,
     setCouponCode,
     setFocusedField,

@@ -10,6 +10,8 @@ export type Settings = {
   email?: string;
   phone?: string;
   address?: string;
+  shortDesc?: string;
+  openHours?: string;
   googleMapsIframe?: string;
   promoVideoUrl?: string;
   businessHours?: Array<{

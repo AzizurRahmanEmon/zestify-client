@@ -8,16 +8,23 @@ import AboutSection from "@/components/about/AboutSection";
 import { getHomePage } from "@/services/pages";
 import { getChefs } from "@/services/chefs";
 import { getPartners, type Partner } from "@/services/partners";
+import { getSettings } from "@/services/settings";
+import { buildFooterProps } from "@/lib/buildFooterProps";
 
 const AboutPage = async () => {
-  const [home, chefs, partners] = await Promise.all([
+  const [home, chefs, partners, settings] = await Promise.all([
     getHomePage().catch(() => null),
     getChefs({ isActive: true, limit: 6 }).catch(() => []),
     getPartners({ isActive: true, limit: 50 }).catch(() => []),
+    getSettings().catch(() => null),
   ]);
 
   return (
-    <MainLayout header={home?.header} insta={home?.insta} footer={home?.footer}>
+    <MainLayout
+      header={home?.header}
+      insta={home?.insta}
+      footer={buildFooterProps(home?.footer, settings)}
+    >
       <BreadcrumbSection title="About Us" />
       <AboutSection variant />
       <AboutServiceSection />

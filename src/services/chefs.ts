@@ -1,5 +1,16 @@
 import { request } from "@/lib/api";
 
+export type ChefQualification = {
+  date: string;
+  title: string;
+  school: string;
+};
+
+export type ChefStat = {
+  label: string;
+  percentage: number;
+};
+
 export type Chef = {
   _id: string;
   name: string;
@@ -9,7 +20,21 @@ export type Chef = {
   imgSrc: string;
   altText?: string;
   profileLink?: string;
-  socialLinks?: { linkedin?: string; facebook?: string; twitter?: string };
+  socialLinks?: {
+    linkedin?: string;
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+  };
+  position?: string;
+  experience?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  bio?: string;
+  qualifications?: ChefQualification[];
+  stats?: ChefStat[];
+  certificates?: string[];
 };
 
 export async function getChefs(

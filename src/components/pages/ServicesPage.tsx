@@ -7,15 +7,22 @@ import GallerySection from "@/components/gallery/GallerySection";
 import CtaSection2 from "@/components/cta/CtaSection2";
 import { getHomePage } from "@/services/pages";
 import { getPartners } from "@/services/partners";
+import { getSettings } from "@/services/settings";
+import { buildFooterProps } from "@/lib/buildFooterProps";
 
 const ServicesPage = async () => {
-  const [home, partners] = await Promise.all([
+  const [home, partners, settings] = await Promise.all([
     getHomePage().catch(() => null),
     getPartners({ isActive: true, limit: 50 }).catch(() => []),
+    getSettings().catch(() => null),
   ]);
 
   return (
-    <MainLayout header={home?.header} insta={home?.insta} footer={home?.footer}>
+    <MainLayout
+      header={home?.header}
+      insta={home?.insta}
+      footer={buildFooterProps(home?.footer, settings)}
+    >
       <BreadcrumbSection title="Services" />
       <ServiceSection2 />
       <CtaSection2 />

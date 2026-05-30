@@ -4,6 +4,7 @@ import ContactSection from "@/components/contact/ContactSection";
 import VideoSection from "@/components/video/VideoSection";
 import { getHomePage } from "@/services/pages";
 import { getSettings } from "@/services/settings";
+import { buildFooterProps } from "@/lib/buildFooterProps";
 
 const ContactPage = async () => {
   const [home, settings] = await Promise.all([
@@ -11,7 +12,11 @@ const ContactPage = async () => {
     getSettings().catch(() => null),
   ]);
   return (
-    <MainLayout header={home?.header} insta={home?.insta} footer={home?.footer}>
+    <MainLayout
+      header={home?.header}
+      insta={home?.insta}
+      footer={buildFooterProps(home?.footer, settings)}
+    >
       <BreadcrumbSection title="Contact" />
       <ContactSection settings={settings ?? undefined} />
       <VideoSection

@@ -13,6 +13,7 @@ const VerifyOtpForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
+  const rememberMe = searchParams.get("remember") === "true";
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
@@ -108,7 +109,7 @@ const VerifyOtpForm = () => {
       }
 
       const customer = json?.data ?? json;
-      setCurrentCustomer(customer);
+      setCurrentCustomer(customer, rememberMe);
       toast.success("Login successful! Welcome back.", {
         autoClose: ALERT_DURATION,
       });
@@ -124,7 +125,7 @@ const VerifyOtpForm = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [otp, email, router]);
+  }, [otp, email, rememberMe, router]);
 
   const handleResend = useCallback(async () => {
     if (countdown > 0) return;

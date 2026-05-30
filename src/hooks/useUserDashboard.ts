@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 
@@ -19,6 +19,8 @@ import {
   DashboardStats,
   DashboardTab,
 } from "@/types";
+
+const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || "";
 
 const DEFAULT_ADDRESS_FORM: DashboardAddressForm = {
   label: "",
@@ -59,6 +61,7 @@ const useUserDashboard = () => {
 
   const [customer, setCustomer] = useState<DashboardCustomer | null>(null);
   const [loading, setLoading] = useState(true);
+  const isMounted = useRef(false);
   const [stats, setStats] = useState<DashboardStats>({
     totalOrders: 0,
     totalSpent: 0,
@@ -134,6 +137,8 @@ const useUserDashboard = () => {
   }, [router]);
 
   const fetchDashboardData = useCallback(async () => {
+    // Wait for client-side hydration before checking auth
+    if (!isMounted.current) return;
     const currentCustomer = getCurrentCustomer() as DashboardCustomer | null;
     if (!currentCustomer || !currentCustomer.token) {
       router.push("/login");
@@ -147,15 +152,16 @@ const useUserDashboard = () => {
 
     try {
       setLoading(true);
-      const headers = {
+      const headers: Record<string, string> = {
         Authorization: `Bearer ${currentCustomer.token}`,
         "Content-Type": "application/json",
+        ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
       };
 
       const [profileRes, statsRes, ordersRes] = await Promise.all([
-        fetch(`${base}/customers/me`, { headers }),
-        fetch(`${base}/customers/me/stats`, { headers }),
-        fetch(`${base}/orders/mine`, { headers }),
+        fetch(`${base}/customers/me`, { headers, cache: "no-store" }),
+        fetch(`${base}/customers/me/stats`, { headers, cache: "no-store" }),
+        fetch(`${base}/orders/mine`, { headers, cache: "no-store" }),
       ]);
 
       if (profileRes.ok) {
@@ -226,6 +232,7 @@ const useUserDashboard = () => {
   }, [base, router]);
 
   useEffect(() => {
+    isMounted.current = true;
     fetchDashboardData();
   }, [fetchDashboardData]);
 

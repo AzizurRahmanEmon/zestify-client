@@ -43,8 +43,8 @@ const BestSellingProductSection = ({
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8 mt-12 lg:mt-15 animate-fade-in-up animation-delay-400 w-full sm:w-[70%] md:w-full sm:mx-auto">
-            {items.slice(0, 4).map((dish, index) => (
-              <div key={index}>
+            {items.slice(0, 4).map((dish) => (
+              <div key={dish._id || dish.slug}>
                 <div
                   className={`px-10 py-8.75 transition-all duration-500 rounded-lg border border-zPink bg-white group hover:bg-zPink`}
                 >

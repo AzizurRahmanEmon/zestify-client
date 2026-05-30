@@ -1,6 +1,9 @@
 "use client";
 import { paymentOptions } from "@/data";
-import type { CheckoutFormData, CheckoutLoyaltyConfig } from "@/hooks/useCheckoutForm";
+import type {
+  CheckoutFormData,
+  CheckoutLoyaltyConfig,
+} from "@/hooks/useCheckoutForm";
 
 interface CheckoutOrderSummaryProps {
   couponCode: string;
@@ -8,6 +11,7 @@ interface CheckoutOrderSummaryProps {
   availableLoyaltyPoints: number;
   loyaltyPointsToRedeem: number;
   loyaltyConfig: CheckoutLoyaltyConfig;
+  maxRedeemablePoints: number;
   isSubmitting: boolean;
   subtotal: number;
   shippingFee: number;
@@ -25,6 +29,7 @@ const CheckoutOrderSummary = ({
   availableLoyaltyPoints,
   loyaltyPointsToRedeem,
   loyaltyConfig,
+  maxRedeemablePoints,
   isSubmitting,
   subtotal,
   shippingFee,
@@ -35,6 +40,11 @@ const CheckoutOrderSummary = ({
   onLoyaltyChange,
   onPaymentChange,
 }: CheckoutOrderSummaryProps) => {
+  const pointValue = Number(loyaltyConfig.loyaltyPointValue || 1);
+  const minPoints = Number(loyaltyConfig.minimumPointsToRedeem || 10);
+  const isBelowMinimum =
+    loyaltyPointsToRedeem > 0 && loyaltyPointsToRedeem < minPoints;
+  const loyaltyDiscountPreview = loyaltyPointsToRedeem * pointValue;
   return (
     <div className="bg-white rounded-2xl shadow-xl border-2 border-zPink p-8 lg:p-10 sticky top-8">
       <div className="mb-8">
@@ -46,13 +56,17 @@ const CheckoutOrderSummary = ({
 
       <div className="mb-8">
         <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-          <span className="text-lg font-medium text-gray-700">Cart Subtotal</span>
+          <span className="text-lg font-medium text-gray-700">
+            Cart Subtotal
+          </span>
           <span className="text-lg font-bold text-gray-900">
             ${subtotal.toFixed(2)}
           </span>
         </div>
         <div className="flex items-center justify-between py-4 border-b border-gray-100">
-          <span className="text-lg font-medium text-gray-700">Shipping Fee</span>
+          <span className="text-lg font-medium text-gray-700">
+            Shipping Fee
+          </span>
           <span className="text-lg font-bold text-gray-900">
             ${shippingFee.toFixed(2)}
           </span>
@@ -80,22 +94,63 @@ const CheckoutOrderSummary = ({
             </div>
           )}
         </div>
-        <div className="py-4 border-b border-gray-100">
-          <label className="text-sm font-medium text-gray-700">
-            Use loyalty points (available: {availableLoyaltyPoints})
-          </label>
-          <input
-            type="number"
-            min={0}
-            max={availableLoyaltyPoints}
-            value={loyaltyPointsToRedeem}
-            onChange={(e) => onLoyaltyChange(Number(e.target.value || 0))}
-            className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-          />
-          <div className="text-xs text-gray-500 mt-1">
-            Minimum redeemable: {loyaltyConfig.minimumPointsToRedeem} points
+        {availableLoyaltyPoints > 0 ? (
+          <div className="py-4 border-b border-gray-100">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-medium text-gray-700">
+                Loyalty Points
+              </label>
+              <span className="text-xs font-semibold bg-zPink/10 text-zPink px-2 py-0.5 rounded-full">
+                {availableLoyaltyPoints} pts available
+              </span>
+            </div>
+            <div className="text-xs text-gray-500 mb-2">
+              1 pt = ${pointValue.toFixed(2)} &nbsp;·&nbsp; Min: {minPoints} pts
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                min={0}
+                max={maxRedeemablePoints}
+                value={loyaltyPointsToRedeem || ""}
+                placeholder={`0–${maxRedeemablePoints}`}
+                onChange={(e) => onLoyaltyChange(Number(e.target.value || 0))}
+                className={`flex-1 px-3 py-2 border rounded-lg text-sm ${
+                  isBelowMinimum
+                    ? "border-amber-400 bg-amber-50"
+                    : "border-gray-300"
+                }`}
+              />
+              <button
+                type="button"
+                onClick={() => onLoyaltyChange(maxRedeemablePoints)}
+                className="px-3 py-2 text-xs font-semibold border border-zPink text-zPink rounded-lg hover:bg-zPink hover:text-white transition-colors whitespace-nowrap"
+              >
+                Use max
+              </button>
+              {loyaltyPointsToRedeem > 0 && (
+                <button
+                  type="button"
+                  onClick={() => onLoyaltyChange(0)}
+                  className="px-3 py-2 text-xs font-semibold border border-gray-300 text-gray-500 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            {isBelowMinimum && (
+              <p className="text-xs text-amber-600 mt-1.5">
+                Enter at least {minPoints} pts to redeem
+              </p>
+            )}
+            {loyaltyPointsToRedeem >= minPoints &&
+              loyaltyPointsToRedeem > 0 && (
+                <p className="text-xs text-green-600 mt-1.5">
+                  Saves ${loyaltyDiscountPreview.toFixed(2)} on this order
+                </p>
+              )}
           </div>
-        </div>
+        ) : null}
         {couponDiscount > 0 && (
           <div className="flex items-center justify-between py-2 text-green-700">
             <span className="font-medium">Coupon Discount</span>

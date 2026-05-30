@@ -71,8 +71,8 @@ const BlogSidebar = ({
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <h3 className="text-lg font-bold text-gray-900 mb-4">Latest Posts</h3>
         <div className="space-y-4">
-          {latestPosts.map((post, index) => (
-            <article key={index} className="group">
+          {latestPosts.map((post) => (
+            <article key={post._id} className="group">
               <Link
                 href={`/blog/${post.link}`}
                 className="flex gap-4 hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200"

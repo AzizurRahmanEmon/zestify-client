@@ -1,41 +1,20 @@
 "use client";
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import type { ChangeEvent } from "react";
 import ProductCard from "./ProductCard";
 import ShopSearchForm from "@/components/form/ShopSearchForm";
 import { useShopFilters } from "@/hooks/useShopFilters";
 import ActiveFilters from "./ActiveFilters";
 import type { ProductDataType } from "@/types";
-const productTags = [
-  {
-    id: 1,
-    tag: "chicken",
-  },
-  {
-    id: 2,
-    tag: "healthy",
-  },
-  {
-    id: 3,
-    tag: "popular",
-  },
-  {
-    id: 4,
-    tag: "seafood",
-  },
-  {
-    id: 5,
-    tag: "spicy",
-  },
-  {
-    id: 6,
-    tag: "vegetarian",
-  },
-];
 interface Props {
   products: ProductDataType[];
 }
 const ShopSection = ({ products }: Props) => {
+  const productTags = useMemo(
+    () => Array.from(new Set(products.flatMap((p) => p.tags ?? []))).sort(),
+    [products],
+  );
+
   const {
     shopSearchTerm,
     setShopSearchTerm,
@@ -132,7 +111,7 @@ const ShopSection = ({ products }: Props) => {
                       shopSelectedCategory === category ? "text-zPink" : ""
                     }`}
                   >
-                    <h6>{category}</h6>
+                    <h6 className="capitalize">{category}</h6>
                     <h6>({count})</h6>
                   </li>
                 ))}
@@ -174,19 +153,23 @@ const ShopSection = ({ products }: Props) => {
             <div className="mt-6">
               <h5 className="text-2xl font-semibold">Popular Tags</h5>
               <ul className="mt-6 flex flex-wrap gap-4">
-                {productTags.map((item) => (
-                  <li
-                    key={item.id}
-                    onClick={() => handleShopTagClick(item.tag)}
-                    className={`border rounded py-2 px-3 transition bg-white cursor-pointer ${
-                      shopSelectedTags.includes(item.tag)
-                        ? "border-zPink text-zPink"
-                        : "text-textColor border-textColor hover:border-zPink hover:text-zPink"
-                    }`}
-                  >
-                    {item.tag}
-                  </li>
-                ))}
+                {productTags.length > 0 ? (
+                  productTags.map((tag) => (
+                    <li
+                      key={tag}
+                      onClick={() => handleShopTagClick(tag)}
+                      className={`border rounded py-2 px-3 transition capitalize bg-white cursor-pointer ${
+                        shopSelectedTags.includes(tag)
+                          ? "border-zPink text-zPink"
+                          : "text-textColor border-textColor hover:border-zPink hover:text-zPink"
+                      }`}
+                    >
+                      {tag}
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-sm text-gray-400">No tags available</li>
+                )}
               </ul>
             </div>
           </div>
@@ -244,7 +227,7 @@ const ShopSection = ({ products }: Props) => {
             <ul className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8 mt-10 lg:mt-15">
               {currentProducts.length > 0 ? (
                 currentProducts.map((product) => (
-                  <li key={product.slug}>
+                  <li key={product._id}>
                     <ProductCard product={product} />
                   </li>
                 ))

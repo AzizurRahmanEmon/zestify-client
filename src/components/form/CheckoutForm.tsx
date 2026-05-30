@@ -22,11 +22,12 @@ const CheckoutForm = () => {
     handleSubmit,
     isFieldActive,
     isSubmitting,
+    handleLoyaltyChange,
     loyaltyConfig,
     loyaltyPointsToRedeem,
+    maxRedeemablePoints,
     orderTotal,
     setCouponCode,
-    setLoyaltyPointsToRedeem,
     shippingFee,
     subtotal,
     customerAddresses,
@@ -60,6 +61,7 @@ const CheckoutForm = () => {
             availableLoyaltyPoints={availableLoyaltyPoints}
             loyaltyPointsToRedeem={loyaltyPointsToRedeem}
             loyaltyConfig={loyaltyConfig}
+            maxRedeemablePoints={maxRedeemablePoints}
             isSubmitting={isSubmitting}
             subtotal={subtotal}
             shippingFee={shippingFee}
@@ -67,7 +69,7 @@ const CheckoutForm = () => {
             payment={formData.payment}
             onCouponCodeChange={setCouponCode}
             onApplyCoupon={applyCoupon}
-            onLoyaltyChange={setLoyaltyPointsToRedeem}
+            onLoyaltyChange={handleLoyaltyChange}
             onPaymentChange={handleInputChange}
           />
         </div>

@@ -99,7 +99,7 @@ const CartModal = ({ isCartModalOpen, closeCartModal }: Props) => {
                 <div className="space-y-4 py-4">
                   {cartList.map((product) => (
                     <div
-                      key={product.id}
+                      key={product._id}
                       className="flex flex-col sm:flex-row sm:justify-start sm:text-start justify-center text-center items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200"
                     >
                       {/* Product Image */}

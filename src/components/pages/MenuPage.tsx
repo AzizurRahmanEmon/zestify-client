@@ -4,6 +4,7 @@ import MenuSection2 from "@/components/menu/MenuSection2";
 import MenuSection3 from "@/components/menu/MenuSection3";
 import { getProducts } from "@/services/products";
 import { getSettings } from "@/services/settings";
+import { buildFooterProps } from "@/lib/buildFooterProps";
 import { getHomePage, getMenuPage } from "@/services/pages";
 
 const MenuPage = async () => {
@@ -30,7 +31,11 @@ const MenuPage = async () => {
     getProducts({ isActive: true, limit: 6 }).catch(() => []),
   ]);
   return (
-    <MainLayout header={home?.header} insta={home?.insta} footer={home?.footer}>
+    <MainLayout
+      header={home?.header}
+      insta={home?.insta}
+      footer={buildFooterProps(home?.footer, settings)}
+    >
       <BreadcrumbSection title="Menu" />
       <MenuSection2
         coffeeTitle={menuConfig?.menuPage?.coffeeTitle || "Coffee Menu"}

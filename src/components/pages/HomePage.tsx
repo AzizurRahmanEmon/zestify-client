@@ -17,6 +17,7 @@ import { getPartners, type Partner as PartnerType } from "@/services/partners";
 import { getTestimonials } from "@/services/testimonials";
 import { getBlogs } from "@/services/blogs";
 import { getSettings } from "@/services/settings";
+import { buildFooterProps } from "@/lib/buildFooterProps";
 import type { ProductDataType } from "@/types";
 
 type HeroSection = {
@@ -310,8 +311,14 @@ const HomePage = async () => {
         return null;
     }
   });
+  const footerFromSettings = buildFooterProps(home?.footer, settings);
+
   return (
-    <MainLayout header={home?.header} insta={home?.insta} footer={home?.footer}>
+    <MainLayout
+      header={home?.header}
+      insta={home?.insta}
+      footer={footerFromSettings}
+    >
       {sections}
     </MainLayout>
   );

@@ -1,6 +1,6 @@
 "use client";
 import type { ChangeEvent } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { API_URL } from "@/lib/api";
 import { getCurrentCustomer } from "@/lib/auth";
@@ -174,6 +174,11 @@ export const useReservationForm = ({
       .map((slot) => slot.time);
   }, [availableSlots]);
 
+  const currentTimeRef = useRef(formData.time);
+  useEffect(() => {
+    currentTimeRef.current = formData.time;
+  }, [formData.time]);
+
   useEffect(() => {
     const dateStr = formData.date.trim();
     if (!dateStr) {
@@ -210,12 +215,12 @@ export const useReservationForm = ({
         const slots = Array.isArray(json?.data?.slots) ? json.data.slots : [];
         setAvailableSlots(slots);
 
+        const time = currentTimeRef.current;
         if (
-          formData.time &&
+          time &&
           slots.length > 0 &&
           !slots.some(
-            (slot: ReservationSlot) =>
-              slot?.available && slot?.time === formData.time,
+            (slot: ReservationSlot) => slot?.available && slot?.time === time,
           )
         ) {
           setFormData((prev) => ({ ...prev, time: "" }));
@@ -231,7 +236,7 @@ export const useReservationForm = ({
     return () => {
       cancelled = true;
     };
-  }, [formData.date, formData.time]);
+  }, [formData.date]);
 
   const handleSubmit = useCallback(async () => {
     const trimmedData = {

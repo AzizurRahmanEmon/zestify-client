@@ -45,7 +45,7 @@ const WishlistSection = () => {
                 <div className="divide-y divide-gray-100">
                   {wishlistList.map((product) => (
                     <div
-                      key={product.id}
+                      key={product._id || product.slug}
                       className="grid grid-cols-12 gap-6 py-6 px-8 items-center hover:bg-gray-50 transition-colors duration-200"
                     >
                       {/* Product Info */}
@@ -67,9 +67,11 @@ const WishlistSection = () => {
                           >
                             {product.name}
                           </Link>
-                          <p className="text-gray-600">
-                            Rashers of streaky bacon
-                          </p>
+                          {product.description && (
+                            <p className="text-gray-600 line-clamp-1">
+                              {product.description}
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -107,7 +109,7 @@ const WishlistSection = () => {
             <div className="lg:hidden space-y-4">
               {wishlistList.map((product) => (
                 <div
-                  key={product.id}
+                  key={product._id || product.slug}
                   className="bg-white rounded-2xl shadow-lg p-6 relative"
                 >
                   {/* Remove Button */}
@@ -145,9 +147,11 @@ const WishlistSection = () => {
                       >
                         {product.name}
                       </Link>
-                      <p className="text-gray-600 text-sm sm:text-base mb-3">
-                        Rashers of streaky bacon
-                      </p>
+                      {product.description && (
+                        <p className="text-gray-600 text-sm sm:text-base mb-3 line-clamp-2">
+                          {product.description}
+                        </p>
+                      )}
                       <div className="flex items-center justify-between">
                         <span className="text-xl sm:text-2xl font-bold text-zPink">
                           ${formatPrice(product.price ?? 0)}

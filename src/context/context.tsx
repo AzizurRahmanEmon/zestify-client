@@ -1,5 +1,11 @@
 "use client";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import type { ProductDataType } from "@/types";
 import { toast } from "react-toastify";
 import { API_URL } from "@/lib/api";
@@ -77,6 +83,7 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({
   children,
 }) => {
   const [isSessionHydrated, setIsSessionHydrated] = useState(false);
+  const isSyncEnabled = useRef(false);
 
   // Mobile Menu Modal
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
@@ -247,6 +254,7 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({
         if (!cancelled) {
           setCartList(normalizeProductList(data.savedCart));
           setWishlistList(normalizeProductList(data.savedWishlist));
+          isSyncEnabled.current = false;
         }
       } catch {
         if (!cancelled) {
@@ -261,6 +269,7 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({
     };
 
     const handleAuthChanged = () => {
+      isSyncEnabled.current = false;
       setIsSessionHydrated(false);
       hydrateSessionLists();
     };
@@ -276,6 +285,11 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({
 
   useEffect(() => {
     if (!isSessionHydrated) return;
+
+    if (!isSyncEnabled.current) {
+      isSyncEnabled.current = true;
+      return;
+    }
 
     const customer = getCurrentCustomer();
     if (!customer?.token) return;

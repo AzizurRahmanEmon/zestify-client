@@ -106,8 +106,8 @@ const PopularProductSection = ({
                 }}
                 modules={[Navigation]}
               >
-                {items.map((item, index) => (
-                  <SwiperSlide key={index}>
+                {items.map((item) => (
+                  <SwiperSlide key={item._id || item.slug}>
                     <div className="group my-3 relative bg-[#323232] px-9 pt-6 pb-8 rounded-xl overflow-hidden transition-all duration-500 ease-out hover:bg-zPink hover:shadow-2xl hover:shadow-zPink/20 hover:-translate-y-2 hover:scale-[1.02]">
                       <div className="flex items-center justify-center gap-1 text-white">
                         <i className="fa-solid fa-star text-starFilled group-hover:scale-125 group-hover:rotate-12 transition-all duration-300 delay-75"></i>
