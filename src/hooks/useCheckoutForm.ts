@@ -712,9 +712,10 @@ export const useCheckoutForm = () => {
     },
     [
       cartList,
+      clearCart,
       couponCode,
       couponDiscount,
-      currentCustomer?.token,
+      currentCustomer,
       formData,
       focusField,
       loyaltyDiscountAmount,
