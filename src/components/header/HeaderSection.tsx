@@ -58,6 +58,7 @@ const HeaderSection = ({
               src={logo}
               alt="Zestify logo"
               className="absolute top-0 left-0 w-full h-24.75 sm:h-30 lg:h-40.25 2xl:h-42.25 object-cover"
+              loading="eager"
             />
           </Link>
         </div>

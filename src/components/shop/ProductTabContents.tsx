@@ -10,6 +10,7 @@ type Props = {
 };
 
 const ProductTabContents = ({ product, nutrition, reviews }: Props) => {
+  const resolvedNutrition = nutrition ?? product.nutritionInfo ?? null;
   const [isActiveTab, setIsActiveTab] = useState<string>("tab-1");
   const toggleTab = (tab: string) => {
     setIsActiveTab(tab);
@@ -114,37 +115,39 @@ const ProductTabContents = ({ product, nutrition, reviews }: Props) => {
             <tbody>
               <tr className="border-b">
                 <td className="py-2 font-semibold">Serving Size</td>
-                <td className="py-2">{nutrition?.servingSize || "N/A"}</td>
+                <td className="py-2">
+                  {resolvedNutrition?.servingSize || "N/A"}
+                </td>
               </tr>
               <tr className="border-b">
                 <td className="py-2 font-semibold">Calories</td>
                 <td className="py-2">
-                  {typeof nutrition?.calories === "number"
-                    ? `${nutrition.calories} kcal`
+                  {typeof resolvedNutrition?.calories === "number"
+                    ? `${resolvedNutrition.calories} kcal`
                     : "N/A"}
                 </td>
               </tr>
               <tr className="border-b">
                 <td className="py-2 font-semibold">Protein</td>
                 <td className="py-2">
-                  {typeof nutrition?.protein === "number"
-                    ? `${nutrition.protein} g`
+                  {typeof resolvedNutrition?.protein === "number"
+                    ? `${resolvedNutrition.protein} g`
                     : "N/A"}
                 </td>
               </tr>
               <tr className="border-b">
                 <td className="py-2 font-semibold">Total Fat</td>
                 <td className="py-2">
-                  {typeof nutrition?.fat === "number"
-                    ? `${nutrition.fat} g`
+                  {typeof resolvedNutrition?.fat === "number"
+                    ? `${resolvedNutrition.fat} g`
                     : "N/A"}
                 </td>
               </tr>
               <tr className="border-b">
                 <td className="py-2 font-semibold">Carbohydrates</td>
                 <td className="py-2">
-                  {typeof nutrition?.carbs === "number"
-                    ? `${nutrition.carbs} g`
+                  {typeof resolvedNutrition?.carbs === "number"
+                    ? `${resolvedNutrition.carbs} g`
                     : "N/A"}
                 </td>
               </tr>

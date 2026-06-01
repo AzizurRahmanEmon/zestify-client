@@ -34,7 +34,10 @@ export default async function Home({
   const { slug } = await params;
   const [productInfo, nutrition, reviews, related] = await Promise.all([
     getProductBySlug(slug),
-    getProductNutrition(slug).catch(() => null),
+    getProductNutrition(slug).catch((err) => {
+      console.error("[getProductNutrition]", err);
+      return null;
+    }),
     getProductReviews(slug, { page: 1, limit: 20 }).catch(() => ({
       averageRating: 0,
       reviewsCount: 0,
