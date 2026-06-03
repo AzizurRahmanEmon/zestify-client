@@ -17,7 +17,7 @@ const ReservationForm = () => {
   } = useReservationForm({ messagePayloadKey: "specialRequests" });
 
   return (
-    <div className="space-y-8 max-w-2xl mx-auto p-6">
+    <div className="space-y-8 max-w-2xl mx-auto">
       {/* Name Field */}
       <div className="relative group">
         <input

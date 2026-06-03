@@ -19,7 +19,7 @@ export const useBlogFilters = () => {
   const blogCurrentPage = parseInt(searchParams?.get("page") ?? "1");
 
   // Constants
-  const postsPerPage = 8;
+  const postsPerPage = 6;
 
   // Update URL helper function
   const updateFilters = useCallback(

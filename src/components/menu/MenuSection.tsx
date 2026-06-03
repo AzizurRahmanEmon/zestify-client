@@ -85,7 +85,7 @@ const MenuSection = ({
                     <div className="flex-1 flex flex-col md:flex-row items-center md:items-start justify-between gap-8 min-w-0">
                       <div className="flex-1 min-w-0 text-center md:text-start">
                         <div className="flex items-center gap-8 mb-3">
-                          <h4 className="text-2xl lg:text-3xl font-primary whitespace-nowrap text-white transition-all duration-300 group-hover:text-zPink group-hover:scale-105">
+                          <h4 className="text-2xl lg:text-3xl mx-auto md:mx-0 font-primary whitespace-nowrap text-white transition-all duration-300 group-hover:text-zPink group-hover:scale-105">
                             {item.title}
                           </h4>
                           <div className="flex-1 hidden items-center justify-center transition-all duration-500">

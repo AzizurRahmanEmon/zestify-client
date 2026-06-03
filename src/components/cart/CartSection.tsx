@@ -31,7 +31,7 @@ const CartSection = () => {
 
   return (
     <section
-      className="bg-no-repeat min-h-screen"
+      className="bg-no-repeat lg:min-h-screen"
       style={{
         backgroundImage: `url(/assets/img/hex-shapes.png)`,
       }}

@@ -35,8 +35,8 @@ const CheckoutForm = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="grid lg:grid-cols-3 gap-12 xl:gap-16">
-        <div className="lg:col-span-2">
+      <div className="grid xl:grid-cols-3 gap-12 xl:gap-16">
+        <div className="xl:col-span-2">
           <CheckoutBillingSection
             alert={alert}
             customerAddresses={customerAddresses}
@@ -54,7 +54,7 @@ const CheckoutForm = () => {
           />
         </div>
 
-        <div className="lg:col-span-1">
+        <div className="xl:col-span-1">
           <CheckoutOrderSummary
             couponCode={couponCode}
             couponDiscount={couponDiscount}

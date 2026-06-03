@@ -30,9 +30,9 @@ const UserDashboardOrderDetailsModal = ({
         className="fixed inset-0 bg-black/50 z-150 transition-opacity"
         onClick={onClose}
       />
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-white rounded-2xl shadow-2xl z-160 overflow-hidden max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
-          <h3 className="text-xl font-bold text-gray-900">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-w-[95%] sm:max-w-2xl bg-white rounded-2xl shadow-2xl z-160 overflow-hidden max-h-[90vh] overflow-y-auto border border-stone-100">
+        <div className="p-6 border-b border-stone-100 flex items-center justify-between sticky top-0 bg-white z-10">
+          <h3 className="text-lg font-primary font-bold text-stone-900">
             Order Details - {order.orderNumber}
           </h3>
           <button
@@ -44,8 +44,8 @@ const UserDashboardOrderDetailsModal = ({
         </div>
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 p-4 rounded-xl">
-              <p className="text-sm text-gray-500 mb-1">Status</p>
+            <div className="bg-[#f8f5f2] p-4 rounded-xl border border-stone-100">
+              <p className="text-sm text-stone-500 mb-1">Status</p>
               <span
                 className={`px-3 py-1 rounded-full text-xs font-medium ${
                   order.status === "delivered"
@@ -58,16 +58,16 @@ const UserDashboardOrderDetailsModal = ({
                 {order.status.toUpperCase()}
               </span>
             </div>
-            <div className="bg-gray-50 p-4 rounded-xl">
-              <p className="text-sm text-gray-500 mb-1">Date</p>
-              <p className="font-bold">
+            <div className="bg-[#f8f5f2] p-4 rounded-xl border border-stone-100">
+              <p className="text-sm text-stone-500 mb-1">Date</p>
+              <p className="font-bold text-stone-900">
                 {new Date(order.createdAt).toLocaleDateString()}
               </p>
             </div>
           </div>
 
           <div>
-            <h4 className="font-bold text-gray-900 mb-4">Items</h4>
+            <h4 className="font-bold text-stone-900 mb-4">Items</h4>
             <div className="space-y-4">
               {order.items.map((item, idx) => {
                 const product = hasProduct(item.product) ? item.product : null;
@@ -75,7 +75,7 @@ const UserDashboardOrderDetailsModal = ({
                 return (
                   <div
                     key={idx}
-                    className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl"
+                    className="flex items-center gap-4 p-3 bg-[#f8f5f2] rounded-xl border border-stone-100"
                   >
                     <div className="w-16 h-16 bg-white rounded-lg shrink-0 overflow-hidden">
                       <Image
@@ -87,8 +87,8 @@ const UserDashboardOrderDetailsModal = ({
                       />
                     </div>
                     <div className="flex-1">
-                      <h5 className="font-bold text-gray-900">{item.name}</h5>
-                      <p className="text-sm text-gray-600">
+                      <h5 className="font-bold text-stone-900">{item.name}</h5>
+                      <p className="text-sm text-stone-500">
                         {item.quantity} x ${item.price.toFixed(2)}
                       </p>
                     </div>
@@ -101,22 +101,22 @@ const UserDashboardOrderDetailsModal = ({
             </div>
           </div>
 
-          <div className="border-t border-gray-100 pt-6 space-y-2">
-            <div className="flex justify-between text-gray-600">
+          <div className="border-t border-stone-100 pt-6 space-y-2">
+            <div className="flex justify-between text-stone-500 text-sm">
               <span>Subtotal</span>
               <span>${order.subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-gray-600">
+            <div className="flex justify-between text-stone-500 text-sm">
               <span>Tax (10%)</span>
               <span>${order.tax.toFixed(2)}</span>
             </div>
             {order.deliveryFee > 0 && (
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between text-stone-500 text-sm">
                 <span>Delivery Fee</span>
                 <span>${order.deliveryFee.toFixed(2)}</span>
               </div>
             )}
-            <div className="flex justify-between text-xl font-bold text-gray-900 pt-2 border-t border-gray-100">
+            <div className="flex justify-between text-xl font-bold text-stone-900 pt-2 border-t border-stone-100">
               <span>Total</span>
               <span className="text-zPink">
                 ${order.totalAmount.toFixed(2)}
@@ -125,12 +125,12 @@ const UserDashboardOrderDetailsModal = ({
           </div>
 
           {order.deliveryAddress && (
-            <div className="bg-pink-50 p-4 rounded-xl">
-              <h4 className="font-bold text-zPink mb-2 flex items-center gap-2">
+            <div className="bg-zPink/5 border border-zPink/10 p-4 rounded-xl">
+              <h4 className="font-bold text-zPink mb-2 flex items-center gap-2 text-sm">
                 <i className="fa-solid fa-location-dot"></i>
                 Delivery Address
               </h4>
-              <p className="text-sm text-gray-700">{order.deliveryAddress}</p>
+              <p className="text-sm text-stone-600">{order.deliveryAddress}</p>
             </div>
           )}
         </div>

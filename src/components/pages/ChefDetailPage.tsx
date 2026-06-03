@@ -10,22 +10,20 @@ interface Props {
 const ChefDetailPage = ({ chefInfo }: Props) => {
   return (
     <MainLayout>
-      <BreadcrumbSection title={chefInfo ? "Chef Details" : "Error Page"} />
+      <BreadcrumbSection
+        title={chefInfo ? "Chef Details" : "Error Page"}
+        items={
+          chefInfo
+            ? [
+                { label: "Home", href: "/", icon: "fa-solid fa-house" },
+                { label: "Our Team", href: "/chef" },
+                { label: "Chef Details", icon: "fa-solid fa-user-chef" },
+              ]
+            : undefined
+        }
+      />
       {chefInfo ? (
-        <TeamDetailSection
-          name={chefInfo.name}
-          img={chefInfo.imgSrc}
-          position={chefInfo.position || chefInfo.title}
-          experience={chefInfo.experience}
-          phone={chefInfo.phone}
-          email={chefInfo.email}
-          address={chefInfo.address}
-          bio={chefInfo.bio}
-          qualifications={chefInfo.qualifications}
-          stats={chefInfo.stats}
-          socialLinks={chefInfo.socialLinks}
-          certificates={chefInfo.certificates}
-        />
+   <TeamDetailSection chef={chefInfo} />
       ) : (
         <ErrorSection />
       )}

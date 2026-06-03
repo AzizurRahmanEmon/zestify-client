@@ -50,9 +50,9 @@ const UserDashboardAddressModal = ({
         className="fixed inset-0 bg-black/50 z-150 transition-opacity"
         onClick={onClose}
       />
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-2xl z-160 overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
-          <h3 className="text-xl font-bold text-gray-900">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full sm:max-w-md bg-white rounded-2xl shadow-2xl z-160 max-h-[600px] overflow-auto max-w-[95%] border border-stone-100">
+        <div className="p-6 border-b border-stone-100 flex items-center justify-between sticky top-0 bg-white z-10">
+          <h3 className="text-lg font-primary font-bold text-stone-900">
             {editingAddress ? "Edit Address" : "Add New Address"}
           </h3>
           <button
@@ -63,9 +63,9 @@ const UserDashboardAddressModal = ({
           </button>
         </div>
         <form onSubmit={onSubmit} className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-stone-700 mb-1">
                 Label (e.g., Home, Office)
               </label>
               <input
@@ -73,19 +73,19 @@ const UserDashboardAddressModal = ({
                 required
                 value={addressForm.label}
                 onChange={(e) => onLabelChange(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zPink focus:border-transparent"
+                className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-zPink/20 focus:border-zPink transition-all bg-[#f8f5f2]/50"
                 placeholder="Home"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-stone-700 mb-1">
                 Country
               </label>
               <select
                 required
                 value={addressForm.country}
                 onChange={(e) => onCountryChange(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zPink focus:border-transparent appearance-none bg-white"
+                className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-zPink/20 focus:border-zPink appearance-none bg-white transition-all"
               >
                 <option value="">Select Country</option>
                 {locationOptions.map((country) => (
@@ -98,21 +98,21 @@ const UserDashboardAddressModal = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-stone-700 mb-1">
               Full Address
             </label>
             <textarea
               required
               value={addressForm.address}
               onChange={(e) => onAddressChange(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zPink focus:border-transparent h-24"
+              className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-zPink/20 focus:border-zPink h-24 transition-all bg-[#f8f5f2]/50"
               placeholder="123 Street Name, Apartment..."
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-stone-700 mb-1">
                 State / Province
               </label>
               <select
@@ -120,7 +120,7 @@ const UserDashboardAddressModal = ({
                 disabled={!addressForm.country}
                 value={addressForm.state}
                 onChange={(e) => onStateChange(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zPink focus:border-transparent appearance-none bg-white disabled:bg-gray-50 disabled:text-gray-400"
+                className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-zPink/20 focus:border-zPink appearance-none bg-white disabled:bg-stone-50 disabled:text-stone-400 transition-all"
               >
                 <option value="">Select State</option>
                 {selectedCountry?.states.map((state) => (
@@ -131,7 +131,7 @@ const UserDashboardAddressModal = ({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-stone-700 mb-1">
                 City
               </label>
               <select
@@ -139,7 +139,7 @@ const UserDashboardAddressModal = ({
                 disabled={!addressForm.state}
                 value={addressForm.city}
                 onChange={(e) => onCityChange(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zPink focus:border-transparent appearance-none bg-white disabled:bg-gray-50 disabled:text-gray-400"
+                className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-zPink/20 focus:border-zPink appearance-none bg-white disabled:bg-stone-50 disabled:text-stone-400 transition-all"
               >
                 <option value="">Select City</option>
                 {selectedState?.cities.map((city) => (
@@ -152,7 +152,7 @@ const UserDashboardAddressModal = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-stone-700 mb-1">
               Zip Code
             </label>
             <input
@@ -160,22 +160,22 @@ const UserDashboardAddressModal = ({
               required
               value={addressForm.zipCode}
               onChange={(e) => onZipCodeChange(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zPink focus:border-transparent"
+              className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-zPink/20 focus:border-zPink transition-all bg-[#f8f5f2]/50"
               placeholder="10001"
             />
           </div>
-          <label className="flex items-center gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-lg transition-colors">
+          <label className="flex items-center gap-3 cursor-pointer p-2.5 hover:bg-[#f8f5f2] rounded-xl transition-colors border border-stone-100">
             <input
               type="checkbox"
               checked={addressForm.isDefault}
               onChange={(e) => onDefaultChange(e.target.checked)}
               className="w-5 h-5 text-zPink rounded focus:ring-zPink"
             />
-            <span className="text-gray-700">Set as default address</span>
+            <span className="text-stone-700 text-sm font-medium">Set as default address</span>
           </label>
           <button
             type="submit"
-            className="w-full bg-zPink text-white py-4 rounded-lg hover:bg-pink-600 transition-colors duration-300 font-bold text-lg"
+            className="w-full bg-zPink text-white py-3.5 rounded-xl hover:bg-pink-700 transition-colors duration-300 font-semibold text-sm"
           >
             {editingAddress ? "Update Address" : "Save Address"}
           </button>

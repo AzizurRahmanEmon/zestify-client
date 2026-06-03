@@ -1,4 +1,4 @@
-import { request } from "@/lib/api";
+import { request, API_URL } from "@/lib/api";
 
 export type BlogAuthor = {
   _id?: string;
@@ -92,6 +92,22 @@ async function fetchJson<T>(path: string): Promise<T> {
   return request<T>(path);
 }
 
+async function fetchRawJson<T>(path: string): Promise<T> {
+  const url = `${API_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  const tenantId = process.env.NEXT_PUBLIC_TENANT_ID || "";
+  const res = await fetch(url, {
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      ...(tenantId ? { "x-tenant-id": tenantId } : {}),
+    },
+  });
+  if (!res.ok) {
+    throw new Error(`Request failed (${res.status}) for ${url}`);
+  }
+  return res.json() as Promise<T>;
+}
+
 function buildBlogsPath(
   path: string,
   params: Record<string, string | undefined>,
@@ -127,7 +143,7 @@ export async function getBlogsList(
   const sort = normalizeSort(params.sort) || "date-desc";
   const page = params.page && params.page > 0 ? params.page : 1;
   const limit =
-    params.limit && params.limit > 0 ? Math.min(params.limit, 100) : 8;
+    params.limit && params.limit > 0 ? Math.min(params.limit, 100) : 6;
 
   const endpoint =
     params.category &&
@@ -162,7 +178,7 @@ export async function getBlogsList(
           limit: String(limit),
         });
 
-  const json = await fetchJson<BlogListResponse | Blog[]>(path);
+  const json = await fetchRawJson<BlogListResponse>(path);
   const data = Array.isArray(json)
     ? json
     : Array.isArray(json.data)

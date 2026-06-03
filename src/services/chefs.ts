@@ -1,40 +1,23 @@
 import { request } from "@/lib/api";
 
-export type ChefQualification = {
-  date: string;
-  title: string;
-  school: string;
-};
-
-export type ChefStat = {
-  label: string;
-  percentage: number;
-};
-
 export type Chef = {
   _id: string;
   name: string;
   title: string;
-  specialty?: string;
-  label?: string;
+  specialty: string;
+  label: string;
   imgSrc: string;
-  altText?: string;
-  profileLink?: string;
+  altText: string;
+  profileLink: string;
   socialLinks?: {
-    linkedin?: string;
-    facebook?: string;
-    twitter?: string;
-    instagram?: string;
+    linkedin: string;
+    facebook: string;
+    twitter: string;
   };
-  position?: string;
-  experience?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  bio?: string;
-  qualifications?: ChefQualification[];
-  stats?: ChefStat[];
-  certificates?: string[];
+  isActive: boolean;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export async function getChefs(

@@ -35,9 +35,6 @@ const headerMenuItems: HeaderMenuItem[] = [
       { href: "/login", label: "Login", auth: "guest" },
       { href: "/register", label: "Register", auth: "guest" },
       { href: "/dashboard", label: "Dashboard", auth: "logged_in" },
-      { href: "/wishlist", label: "Wishlist", auth: "logged_in" },
-      { href: "/cart", label: "Cart", auth: "logged_in" },
-      { href: "/checkout", label: "Checkout", auth: "logged_in" },
     ],
   },
   {

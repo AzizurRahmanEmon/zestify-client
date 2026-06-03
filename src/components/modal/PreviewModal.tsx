@@ -20,7 +20,7 @@ const PreviewModal = ({ isPreviewModalOpen, closePreviewModal }: Props) => {
       />
 
       {/* Modal Body */}
-      <div className={`ar-modal-bod ${isPreviewModalOpen ? "show" : "hide"}`}>
+      <div className={`ar-modal-body overflow-hidden ${isPreviewModalOpen ? "show" : "hide"}`}>
         {/* Close Button */}
         <button
           className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 hover:border-zPink hover:bg-zPink hover:text-white transition-all duration-200"
@@ -41,7 +41,7 @@ const PreviewModal = ({ isPreviewModalOpen, closePreviewModal }: Props) => {
           </svg>
         </button>
         {/* Product Card */}
-        <div className="flex flex-col">
+        <div className="flex flex-col overflow-y-auto">
           {/* Product Image */}
           <div className="relative bg-gray-50 p-6">
             <div className="flex justify-center">

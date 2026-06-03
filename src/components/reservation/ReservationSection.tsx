@@ -138,7 +138,7 @@ const ReservationSection = ({
                 <h6 className="ar-subtitle text-white">{subtitle}</h6>
               </div>
               <div className="animate-fade-in-up animation-delay-200">
-                <h2 className="ar-title mt-3 text-white text-center xl:text-start">
+                <h2 className="ar-title mt-3 text-white text-center xl:text-start lg:max-w-lg lg:mx-auto xl:mx-0 xl:max-w-none">
                   {titleLines.map((line, i) => (
                     <span key={i}>
                       {line}
@@ -167,7 +167,7 @@ const ReservationSection = ({
                         height={item.iconHeight}
                         src={item.icon}
                         alt=""
-                        className="w-auto h-auto"
+                        className="h-5 w-auto"
                       />
                     </div>
                     <div className="text-white text-base">

@@ -68,7 +68,7 @@ export default async function Home({
       category,
       tag: tags[0],
       page,
-      limit: 8,
+      limit: 6,
       sort,
     }).catch(() => emptyList),
     getBlogsList({

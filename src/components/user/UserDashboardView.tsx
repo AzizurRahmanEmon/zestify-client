@@ -58,14 +58,14 @@ const UserDashboardView = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-[#f8f5f2]">
         <div className="w-16 h-16 border-4 border-zPink border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-[#f8f5f2] min-h-screen">
       <UserDashboardOrderDetailsModal
         open={isOrderModalOpen}
         order={selectedOrder}
@@ -99,7 +99,7 @@ const UserDashboardView = () => {
 
       <div className="ar-container py-12 lg:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-4 xl:col-span-3">
             <UserDashboardSidebar
               activeTab={activeTab}
               customerName={customer?.name}
@@ -111,7 +111,7 @@ const UserDashboardView = () => {
             />
           </div>
 
-          <div className="lg:col-span-9">
+          <div className="lg:col-span-8 xl:col-span-9">
             {activeTab === "overview" && (
               <UserDashboardOverview
                 stats={stats}
