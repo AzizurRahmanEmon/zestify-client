@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "react-toastify/dist/ReactToastify.css";
 import { primary, secondary } from "./fonts";
 import { ContextProvider } from "@/context/context";
 import AppFontAwesome from "@/components/layout/AppFontAwesome";
