@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
-import Image from "next/image";
 import Link from "next/link";
 import { API_URL } from "@/lib/api";
 import { getCurrentCustomer } from "@/lib/auth";
@@ -381,11 +380,13 @@ const BlogCommentForm = ({
             type="submit"
             disabled={isSubmitting}
             aria-label="Submit comment"
-            className="ar-btn group gap-3 inline-flex items-center px-8 py-4 bg-zPink text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            className="ar-btn group gap-3 relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:w-0"
           >
             {isSubmitting ? (
               <>
-                <span className="relative z-10 font-semibold">Submitting</span>
+                <span className="relative z-10 transition-all duration-500">
+                  Submitting
+                </span>
                 <svg
                   className="relative z-10 animate-spin h-5 w-5"
                   xmlns="http://www.w3.org/2000/svg"
@@ -410,17 +411,11 @@ const BlogCommentForm = ({
               </>
             ) : (
               <>
-                <span className="relative z-10 font-semibold">
+                <span className="relative z-10 transition-all duration-500 group-hover:text-black font-semibold">
                   Submit Comment
                 </span>
-                <Image
-                  width={20}
-                  height={20}
-                  src="/assets/img/arrow.png"
-                  alt="Arrow"
-                  className="relative z-10 w-5 aspect-square h-auto group-hover:translate-x-1 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-linear-to-r from-zPink to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <i className="fa-solid fa-paper-plane relative z-10 transition-all duration-500 group-hover:text-black" />
+                <span className="absolute top-0 left-0 w-0 h-full bg-white transition-all duration-500 group-hover:w-full z-0" />
               </>
             )}
           </button>

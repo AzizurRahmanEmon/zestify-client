@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
 import ProductCard from "./ProductCard";
 import ShopSearchForm from "@/components/form/ShopSearchForm";
@@ -40,18 +40,24 @@ const ShopSection = ({ products }: Props) => {
     clearAllShopFilters,
   } = useShopFilters(products);
 
+  const [localMin, setLocalMin] = useState(shopMinPrice);
+  const [localMax, setLocalMax] = useState(shopMaxPrice);
+
+  useEffect(() => { setLocalMin(shopMinPrice); }, [shopMinPrice]);
+  useEffect(() => { setLocalMax(shopMaxPrice); }, [shopMaxPrice]);
+
   const updateSliderRange = useCallback(() => {
     const min = 0;
     const max = 99;
-    const percent1 = ((shopMinPrice - min) / (max - min)) * 100;
-    const percent2 = ((shopMaxPrice - min) / (max - min)) * 100;
+    const percent1 = ((localMin - min) / (max - min)) * 100;
+    const percent2 = ((localMax - min) / (max - min)) * 100;
 
     const sliderRange = document.querySelector(".slider-range") as HTMLElement;
     if (sliderRange) {
       sliderRange.style.left = `${percent1}%`;
       sliderRange.style.width = `${percent2 - percent1}%`;
     }
-  }, [shopMinPrice, shopMaxPrice]);
+  }, [localMin, localMax]);
 
   // Price filter slider
   useEffect(() => {
@@ -60,21 +66,16 @@ const ShopSection = ({ products }: Props) => {
 
   const handleMinChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
-    if (value < shopMaxPrice) {
-      setShopMinPrice(value);
-    } else {
-      setShopMinPrice(shopMaxPrice - 1);
-    }
+    setLocalMin(value < localMax ? value : localMax - 1);
   };
 
   const handleMaxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
-    if (value > shopMinPrice) {
-      setShopMaxPrice(value);
-    } else {
-      setShopMaxPrice(shopMinPrice + 1);
-    }
+    setLocalMax(value > localMin ? value : localMin + 1);
   };
+
+  const commitMinPrice = () => setShopMinPrice(localMin);
+  const commitMaxPrice = () => setShopMaxPrice(localMax);
   return (
     <section
       className="py-20 lg:py-30"
@@ -128,8 +129,10 @@ const ShopSection = ({ products }: Props) => {
                   type="range"
                   min="0"
                   max="99"
-                  value={shopMinPrice}
+                  value={localMin}
                   onChange={handleMinChange}
+                  onPointerUp={commitMinPrice}
+                  onMouseUp={commitMinPrice}
                   className="absolute -top-2 w-full appearance-none bg-transparent pointer-events-none"
                   id="min-range"
                 />
@@ -137,15 +140,17 @@ const ShopSection = ({ products }: Props) => {
                   type="range"
                   min="0"
                   max="99"
-                  value={shopMaxPrice}
+                  value={localMax}
                   onChange={handleMaxChange}
+                  onPointerUp={commitMaxPrice}
+                  onMouseUp={commitMaxPrice}
                   className="absolute -top-2 w-full appearance-none bg-transparent pointer-events-none"
                   id="max-range"
                 />
               </div>
               <h6 className="mt-10">
                 <span className="text-lg font-semibold">Price</span> : $
-                {shopMinPrice} - ${shopMaxPrice}
+                {localMin} - ${localMax}
               </h6>
             </div>
 
