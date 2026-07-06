@@ -24,6 +24,8 @@ const ForgotPasswordForm = () => {
     message: string;
   } | null>(null);
 
+  const [devOtpHint, setDevOtpHint] = useState("");
+
   useEffect(() => {
     if (alert) {
       const timer = setTimeout(() => {
@@ -48,6 +50,12 @@ const ForgotPasswordForm = () => {
       toast.error("Invalid email format.");
       return;
     }
+    if (!TENANT_ID) {
+      toast.error(
+        "NEXT_PUBLIC_TENANT_ID is missing. Password reset requires your restaurant tenant ID.",
+      );
+      return;
+    }
 
     setIsLoading(true);
     setAlert(null);
@@ -62,10 +70,24 @@ const ForgotPasswordForm = () => {
         body: JSON.stringify({ email: email.trim() }),
       });
 
-      const json = await res.json();
+      const json = (await res.json()) as {
+        success?: boolean;
+        message?: string;
+        data?: { otp?: string };
+      };
       if (!res.ok) throw new Error(json.message || "Failed to send OTP");
 
-      toast.success("Verification code sent to your email!");
+      if (json.data?.otp) {
+        setDevOtpHint(json.data.otp);
+        setOtp(json.data.otp);
+        toast.info(`Development OTP: ${json.data.otp}`);
+      } else {
+        setDevOtpHint("");
+      }
+
+      toast.success(
+        "If a customer account exists for this email, a verification code was sent.",
+      );
       setStep(2);
     } catch (error: unknown) {
       const message =
@@ -134,9 +156,17 @@ const ForgotPasswordForm = () => {
             Forgot Password
           </h2>
           <p className="text-gray-600">
-            Enter your email to receive a verification code
+            Enter your customer account email to receive a verification code.
+            Password reset always uses email OTP (separate from login OTP
+            settings).
           </p>
         </div>
+        {!TENANT_ID && (
+          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Set <code>NEXT_PUBLIC_TENANT_ID</code> in your client app{" "}
+            <code>.env</code> file.
+          </div>
+        )}
         <form onSubmit={handleRequestOtp}>
           <div className="space-y-6">
             <div>
@@ -196,6 +226,11 @@ const ForgotPasswordForm = () => {
           Reset Password
         </h2>
         <p className="text-gray-600">Verification code sent to {email}</p>
+        {devOtpHint && (
+          <p className="mt-2 text-sm text-amber-700">
+            Development OTP: <strong>{devOtpHint}</strong>
+          </p>
+        )}
       </div>
       <form onSubmit={handleResetPassword}>
         <div className="space-y-6">

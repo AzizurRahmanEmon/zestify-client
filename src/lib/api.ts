@@ -1,12 +1,16 @@
 import { ProductDataType } from "@/types";
 
-const DEFAULT_API_URL = "https://zestify-api-backend.vercel.app/api";
+function requireApiUrl(): string {
+  const url = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (!url) {
+    throw new Error(
+      "NEXT_PUBLIC_API_URL is required but not set. Add it to your environment (e.g. client-app/.env.local) before starting the app.",
+    );
+  }
+  return url.replace(/\/+$/, "");
+}
 
-export const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL ||
-  process.env.API_URL ||
-  DEFAULT_API_URL
-)?.replace(/\/+$/, "");
+export const API_URL = requireApiUrl();
 
 type ApiResponse<T> = {
   success: boolean;

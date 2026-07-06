@@ -37,9 +37,9 @@ copy .env.example .env.local
 
 The client app reads the following environment variables:
 
-- `NEXT_PUBLIC_API_URL` - Base URL of the Zestify API
-- `NEXT_PUBLIC_TENANT_ID` - Tenant ID used for scoped requests and demo setup
-- `NEXT_PUBLIC_OTP_REQUIRED` - Set to `false` to skip OTP during development
+- `NEXT_PUBLIC_API_URL` — **Required.** Base URL of the Zestify API. The app fails at startup if this is unset (no hardcoded fallback).
+- `NEXT_PUBLIC_TENANT_ID` — **Required.** Tenant ID used for scoped requests.
+- `NEXT_PUBLIC_OTP_REQUIRED` — Set to `false` to skip OTP during development
 
 ## Development
 
@@ -76,7 +76,7 @@ npm run start
 
 - Set `NEXT_PUBLIC_API_URL` to your deployed API endpoint before building.
 - Make sure the tenant environment values match the demo or production tenant you want to show.
-- Image loading is configured in `next.config.ts` for Cloudinary, localhost, and the hosted API domain.
+- Image loading is configured in `next.config.ts` for Cloudinary (`res.cloudinary.com`) and localhost. Add your own domain to `images.remotePatterns` if needed.
 
 ## Documentation
 
@@ -92,3 +92,4 @@ Before packaging, verify:
 - `npm run build`
 - Environment variables are documented in `.env.example`
 - The API backend is running and reachable from the client app
+- No author-specific API URLs remain in code or config
