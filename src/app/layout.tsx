@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
 import { primary, secondary } from "./fonts";
+import { SITE_URL } from "@/lib/site";
 import { ContextProvider } from "@/context/context";
 import AppFontAwesome from "@/components/layout/AppFontAwesome";
 import AppToaster from "@/components/layout/AppToaster";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://zestify.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Zestify | Fresh Food & Restaurant Experience",
     template: "%s | Zestify",
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://zestify.com",
+    url: SITE_URL,
     siteName: "Zestify",
     title: "Zestify | Fresh Food & Restaurant Experience",
     description:

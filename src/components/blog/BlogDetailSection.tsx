@@ -10,6 +10,7 @@ import FilteredBloglist from "./FilteredBloglist";
 import BlogDetailTopSection from "./BlogDetailTopSection";
 import BlogDetailMidSection from "./BlogDetailMidSection";
 import BlogDetailSocialSection from "./BlogDetailSocialSection";
+import { SITE_URL } from "@/lib/site";
 
 type SidebarCategory = { name: string; count: number };
 
@@ -47,7 +48,7 @@ const BlogDetailSection = ({
   const hasActiveFilters =
     blogSearchTerm || blogSelectedCategory || blogSelectedTags.length > 0;
 
-  const canonicalPostUrl = `https://zestify.com/blog/${blog.link}`;
+  const canonicalPostUrl = `${SITE_URL}/blog/${blog.link}`;
   const encodedPostUrl = encodeURIComponent(canonicalPostUrl);
 
   return (
