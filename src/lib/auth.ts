@@ -1,3 +1,5 @@
+import { API_URL, COOKIE_SESSION, customerFetchInit } from "@/lib/api";
+
 type CustomerLike = {
   _id?: string;
   id?: string;
@@ -11,6 +13,12 @@ const KEY = "zestify_customer";
 const CART_STORAGE_KEY = "zestify_cart_v1";
 const WISHLIST_STORAGE_KEY = "zestify_wishlist_v1";
 
+export { COOKIE_SESSION };
+
+function hasValidAuthToken(token?: string): boolean {
+  return Boolean(token && (token === COOKIE_SESSION || token.length > 0));
+}
+
 // When `remember` is true the session is kept in localStorage so it survives
 // browser restarts. When false it is kept in sessionStorage and is cleared
 // when the tab/browser is closed. When `remember` is omitted the session is
@@ -18,7 +26,10 @@ const WISHLIST_STORAGE_KEY = "zestify_wishlist_v1";
 // so callers like profile updates don't accidentally move the session.
 export function setCurrentCustomer(c: CustomerLike, remember?: boolean) {
   if (typeof window === "undefined") return;
-  const value = JSON.stringify(c);
+  const value = JSON.stringify({
+    ...c,
+    token: COOKIE_SESSION,
+  });
 
   if (remember === true) {
     localStorage.setItem(KEY, value);
@@ -37,13 +48,11 @@ export function setCurrentCustomer(c: CustomerLike, remember?: boolean) {
 
 export function getCurrentCustomer(): CustomerLike | null {
   if (typeof window === "undefined") return null;
-  // Prefer localStorage (remember-me sessions), fall back to sessionStorage
   const raw = localStorage.getItem(KEY) ?? sessionStorage.getItem(KEY);
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as CustomerLike;
-    // Reject stale/partial entries that have no auth token
-    if (!parsed?.token) {
+    if (!hasValidAuthToken(parsed?.token)) {
       localStorage.removeItem(KEY);
       sessionStorage.removeItem(KEY);
       return null;
@@ -71,4 +80,8 @@ export function clearCustomerSession() {
   localStorage.removeItem(WISHLIST_STORAGE_KEY);
   window.dispatchEvent(new Event("auth:changed"));
   window.dispatchEvent(new Event("session:cleared"));
+
+  void fetch(`${API_URL}/customers/logout`, customerFetchInit({ method: "POST" })).catch(
+    () => null,
+  );
 }

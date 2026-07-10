@@ -9,7 +9,8 @@ import {
   getCurrentCustomer,
   setCurrentCustomer,
 } from "@/lib/auth";
-import { API_URL } from "@/lib/api";
+import { API_URL, customerFetchInit } from "@/lib/api";
+import { formatUserError } from "@/lib/userError";
 import {
   DashboardAddress,
   DashboardAddressForm,
@@ -19,8 +20,6 @@ import {
   DashboardStats,
   DashboardTab,
 } from "@/types";
-
-const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || "";
 
 const DEFAULT_ADDRESS_FORM: DashboardAddressForm = {
   label: "",
@@ -152,16 +151,21 @@ const useUserDashboard = () => {
 
     try {
       setLoading(true);
-      const headers: Record<string, string> = {
-        Authorization: `Bearer ${currentCustomer.token}`,
-        "Content-Type": "application/json",
-        ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-      };
+      const token = currentCustomer.token;
 
       const [profileRes, statsRes, ordersRes] = await Promise.all([
-        fetch(`${base}/customers/me`, { headers, cache: "no-store" }),
-        fetch(`${base}/customers/me/stats`, { headers, cache: "no-store" }),
-        fetch(`${base}/orders/mine`, { headers, cache: "no-store" }),
+        fetch(
+          `${base}/customers/me`,
+          customerFetchInit({ token, cache: "no-store" }),
+        ),
+        fetch(
+          `${base}/customers/me/stats`,
+          customerFetchInit({ token, cache: "no-store" }),
+        ),
+        fetch(
+          `${base}/orders/mine`,
+          customerFetchInit({ token, cache: "no-store" }),
+        ),
       ]);
 
       if (profileRes.ok) {
@@ -245,14 +249,14 @@ const useUserDashboard = () => {
     }
 
     try {
-      const res = await fetch(`${base}/customers/me`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${currentCustomer.token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, phone }),
-      });
+      const res = await fetch(
+        `${base}/customers/me`,
+        customerFetchInit({
+          method: "PUT",
+          token: currentCustomer.token,
+          body: JSON.stringify({ name, phone }),
+        }),
+      );
 
       if (!res.ok) {
         const error = (await res.json()) as { message?: string };
@@ -276,9 +280,7 @@ const useUserDashboard = () => {
       setCustomer(updatedCustomer);
       toast.success("Profile updated successfully");
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to update profile";
-      toast.error(message);
+      toast.error(formatUserError(error, "Failed to update profile"));
     }
   }, [base, customer, name, phone, router]);
 
@@ -298,14 +300,14 @@ const useUserDashboard = () => {
           ? `${base}/customers/me/addresses/${editingAddress._id}`
           : `${base}/customers/me/addresses`;
 
-        const res = await fetch(url, {
-          method,
-          headers: {
-            Authorization: `Bearer ${currentCustomer.token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(addressForm),
-        });
+        const res = await fetch(
+          url,
+          customerFetchInit({
+            method,
+            token: currentCustomer.token,
+            body: JSON.stringify(addressForm),
+          }),
+        );
 
         if (!res.ok) {
           const error = (await res.json()) as { message?: string };
@@ -321,9 +323,7 @@ const useUserDashboard = () => {
           `Address ${editingAddress ? "updated" : "added"} successfully`,
         );
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to save address";
-        toast.error(message);
+        toast.error(formatUserError(error, "Failed to save address"));
       }
     },
     [addressForm, base, editingAddress, resetAddressForm, router],
@@ -342,13 +342,10 @@ const useUserDashboard = () => {
     try {
       const res = await fetch(
         `${base}/customers/me/addresses/${addressToDelete}`,
-        {
+        customerFetchInit({
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${currentCustomer.token}`,
-            "Content-Type": "application/json",
-          },
-        },
+          token: currentCustomer.token,
+        }),
       );
 
       if (!res.ok) {
@@ -362,9 +359,7 @@ const useUserDashboard = () => {
       setAddressToDelete(null);
       toast.success("Address deleted successfully");
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to delete address";
-      toast.error(message);
+      toast.error(formatUserError(error, "Failed to delete address"));
     }
   }, [addressToDelete, base, router]);
 

@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import type { ProductDataType } from "@/types";
 import { toast } from "react-toastify";
-import { API_URL } from "@/lib/api";
+import { API_URL, customerFetchInit } from "@/lib/api";
 import { getCurrentCustomer } from "@/lib/auth";
 
 interface ContextData {
@@ -113,7 +113,7 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({
     } else if (promoVideoUrl) {
       setCurrentVideoUrl(promoVideoUrl);
     } else {
-      fetch(`${API_URL}/settings`, { cache: "no-store" })
+      fetch(`${API_URL}/settings`, customerFetchInit({ cache: "no-store" }))
         .then((r) => r.json())
         .then((j) => {
           const s = j?.data ?? j;
@@ -237,12 +237,13 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({
       }
 
       try {
-        const res = await fetch(`${API_URL}/customers/me`, {
-          headers: {
-            Authorization: `Bearer ${customer.token}`,
-          },
-          cache: "no-store",
-        });
+        const res = await fetch(
+          `${API_URL}/customers/me`,
+          customerFetchInit({
+            token: customer.token,
+            cache: "no-store",
+          }),
+        );
 
         if (!res.ok) {
           throw new Error("Failed to load customer session data");
@@ -296,17 +297,17 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({
 
     const timeout = setTimeout(async () => {
       try {
-        await fetch(`${API_URL}/customers/me`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${customer.token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            savedCart: cartList,
-            savedWishlist: wishlistList,
+        await fetch(
+          `${API_URL}/customers/me`,
+          customerFetchInit({
+            method: "PUT",
+            token: customer.token,
+            body: JSON.stringify({
+              savedCart: cartList,
+              savedWishlist: wishlistList,
+            }),
           }),
-        });
+        );
       } catch {
         return;
       }

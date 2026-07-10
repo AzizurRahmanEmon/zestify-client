@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { canReviewProduct, postProductReview } from "@/lib/api";
+import { formatUserError } from "@/lib/userError";
 import { getCurrentCustomer } from "@/lib/auth";
 import Link from "next/link";
 
@@ -90,7 +91,7 @@ const ReviewForm = ({ productSlug, onPosted }: Props) => {
       setCanReview(false);
       onPosted?.();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to post review");
+      toast.error(formatUserError(err, "Failed to post review"));
     } finally {
       setSubmitting(false);
     }

@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
 import { API_URL } from "@/lib/api";
+import { formatUserError } from "@/lib/userError";
 
 // Constants
 const ALERT_DURATION = 4000;
@@ -113,15 +114,15 @@ const NewsletterForm = () => {
         });
         setEmail("");
       } catch (e: unknown) {
-        const message =
-          e instanceof Error
-            ? e.message
-            : "Subscription failed. Please try again.";
+        const message = formatUserError(
+          e,
+          "Subscription failed. Please try again.",
+        );
         setAlert({
           type: "danger",
           message,
         });
-        toast.error("Subscription failed.", { autoClose: ALERT_DURATION });
+        toast.error(message, { autoClose: ALERT_DURATION });
       } finally {
         setIsSubmitting(false);
       }

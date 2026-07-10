@@ -2,13 +2,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { API_URL } from "@/lib/api";
+import { API_URL, customerFetchInit } from "@/lib/api";
 import { useCustomContext } from "@/context/context";
 import { getCurrentCustomer } from "@/lib/auth";
+import { formatUserError } from "@/lib/userError";
 
 const ALERT_DURATION = 4000;
-const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID;
-
 export interface CheckoutFormData {
   name: string;
   email: string;
@@ -127,11 +126,10 @@ export const useCheckoutForm = () => {
       phone: customer.phone || prev.phone,
     }));
 
-    fetch(`${API_URL}/customers/me`, {
-      headers: {
-        Authorization: `Bearer ${customer.token}`,
-      },
-    })
+    fetch(
+      `${API_URL}/customers/me`,
+      customerFetchInit({ token: customer.token }),
+    )
       .then((res) => res.json())
       .then((json) => {
         if (json.success && json.data.savedAddresses) {
@@ -164,17 +162,16 @@ export const useCheckoutForm = () => {
     const savedCoupon = localStorage.getItem("appliedCoupon");
     if (savedCoupon) {
       setCouponCode(savedCoupon);
-      fetch(`${API_URL}/coupons/validate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-        },
-        body: JSON.stringify({
-          code: savedCoupon,
-          subtotal: subtotalRef.current,
+      fetch(
+        `${API_URL}/coupons/validate`,
+        customerFetchInit({
+          method: "POST",
+          body: JSON.stringify({
+            code: savedCoupon,
+            subtotal: subtotalRef.current,
+          }),
         }),
-      })
+      )
         .then((res) => res.json().catch(() => ({})))
         .then((json) => {
           if (json?.success) {
@@ -190,11 +187,7 @@ export const useCheckoutForm = () => {
         });
     }
 
-    fetch(`${API_URL}/settings`, {
-      headers: {
-        ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-      },
-    })
+    fetch(`${API_URL}/settings`, customerFetchInit())
       .then((res) => res.json())
       .then((json) => {
         const data = json?.data || {};
@@ -358,17 +351,16 @@ export const useCheckoutForm = () => {
       return;
     }
 
-    const res = await fetch(`${API_URL}/coupons/validate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-      },
-      body: JSON.stringify({
-        code: couponCode.trim(),
-        subtotal,
+    const res = await fetch(
+      `${API_URL}/coupons/validate`,
+      customerFetchInit({
+        method: "POST",
+        body: JSON.stringify({
+          code: couponCode.trim(),
+          subtotal,
+        }),
       }),
-    });
+    );
 
     const json = await res.json().catch(() => ({}));
     if (res.ok && json?.success) {
@@ -620,16 +612,15 @@ export const useCheckoutForm = () => {
             requestBody.couponCode = couponCode.trim();
           }
 
-          const orderRes = await fetch(`${API_URL}/orders`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${currentCustomer.token}`,
-              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-            },
-            body: JSON.stringify(requestBody),
-            cache: "no-store",
-          });
+          const orderRes = await fetch(
+            `${API_URL}/orders`,
+            customerFetchInit({
+              method: "POST",
+              token: currentCustomer.token,
+              body: JSON.stringify(requestBody),
+              cache: "no-store",
+            }),
+          );
 
           const orderJson = await orderRes.json().catch(() => ({}));
 
@@ -656,38 +647,38 @@ export const useCheckoutForm = () => {
         const gatewayLabel =
           trimmedData.payment === "paypal" ? "PayPal" : "Stripe";
 
-        const res = await fetch(`${API_URL}/payments/${paymentPath}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${currentCustomer.token}`,
-          },
-          body: JSON.stringify({
-            customer: {
-              name: trimmedData.name,
-              email: trimmedData.email,
-              phone: normalizedPhone,
-              address: trimmedData.address,
-              city: trimmedData.city,
-              state: trimmedData.state,
-              postalCode: trimmedData.postalCode,
-              country: trimmedData.country,
-            },
-            notes: trimmedData.notes,
-            deliveryType: "delivery",
-            deliveryFee: shippingFee,
-            couponCode,
-            loyaltyPointsToRedeem,
-            subtotal,
-            totalAmount: orderTotalAmount,
-            items: cartList.map((item) => ({
-              productId: item._id,
-              slug: item.slug,
-              quantity: item.quantity ?? 1,
-            })),
+        const res = await fetch(
+          `${API_URL}/payments/${paymentPath}`,
+          customerFetchInit({
+            method: "POST",
+            token: currentCustomer.token,
+            body: JSON.stringify({
+              customer: {
+                name: trimmedData.name,
+                email: trimmedData.email,
+                phone: normalizedPhone,
+                address: trimmedData.address,
+                city: trimmedData.city,
+                state: trimmedData.state,
+                postalCode: trimmedData.postalCode,
+                country: trimmedData.country,
+              },
+              notes: trimmedData.notes,
+              deliveryType: "delivery",
+              deliveryFee: shippingFee,
+              couponCode,
+              loyaltyPointsToRedeem,
+              subtotal,
+              totalAmount: orderTotalAmount,
+              items: cartList.map((item) => ({
+                productId: item._id,
+                slug: item.slug,
+                quantity: item.quantity ?? 1,
+              })),
+            }),
+            cache: "no-store",
           }),
-          cache: "no-store",
-        });
+        );
 
         const json = await res.json().catch(() => ({}));
         if (!res.ok || json?.success === false) {
@@ -700,10 +691,10 @@ export const useCheckoutForm = () => {
 
         window.location.href = url;
       } catch (err: unknown) {
-        const message =
-          err instanceof Error
-            ? err.message
-            : "Failed to start payment checkout";
+        const message = formatUserError(
+          err,
+          "Failed to start payment checkout",
+        );
         setAlert({ type: "danger", message });
         toast.error(message, { autoClose: ALERT_DURATION });
       } finally {

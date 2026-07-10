@@ -2,12 +2,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
 import Link from "next/link";
-import { API_URL } from "@/lib/api";
+import { API_URL, customerFetchInit } from "@/lib/api";
 import { getCurrentCustomer } from "@/lib/auth";
+import { formatUserError } from "@/lib/userError";
 
 // Constants
 const ALERT_DURATION = 4000;
-const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID;
 
 type Props = {
   blogId: string;
@@ -178,19 +178,15 @@ const BlogCommentForm = ({
         const token = getCurrentCustomer()?.token;
         const res = await fetch(
           `${API_URL}/blogs/${encodeURIComponent(blogId)}/comments`,
-          {
+          customerFetchInit({
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
+            token,
             body: JSON.stringify({
               ...trimmedData,
               parentComment,
             }),
             cache: "no-store",
-          },
+          }),
         );
         const json = await res.json().catch(() => ({}));
         if (!res.ok || json?.success === false) {
@@ -213,8 +209,7 @@ const BlogCommentForm = ({
         });
         onSubmitted?.();
       } catch (err: unknown) {
-        const message =
-          err instanceof Error ? err.message : "Failed to submit comment";
+        const message = formatUserError(err, "Failed to submit comment");
         setAlert({ type: "danger", message });
         toast.error(message, { autoClose: ALERT_DURATION });
       } finally {

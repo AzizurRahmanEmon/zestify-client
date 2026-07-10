@@ -11,6 +11,79 @@ function requireApiUrl(): string {
 }
 
 export const API_URL = requireApiUrl();
+export const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID?.trim() || "";
+
+/** Sentinel for httpOnly cookie sessions — never send as a Bearer token. */
+export const COOKIE_SESSION = "cookie";
+
+export function isCookieSession(token?: string | null): boolean {
+  return token === COOKIE_SESSION;
+}
+
+export function getCsrfTokenFromCookie(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(
+    /(?:^|;\s*)zestify_customer_csrf=([^;]+)/,
+  );
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+type BuildRequestHeadersOptions = {
+  token?: string | null;
+  includeTenant?: boolean;
+  extra?: HeadersInit;
+};
+
+export function buildRequestHeaders({
+  token,
+  includeTenant = true,
+  extra,
+}: BuildRequestHeadersOptions = {}): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (token && !isCookieSession(token)) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const csrfToken = getCsrfTokenFromCookie();
+  if (csrfToken) {
+    headers["X-CSRF-Token"] = csrfToken;
+  }
+
+  if (includeTenant && TENANT_ID) {
+    headers["x-tenant-id"] = TENANT_ID;
+  }
+
+  if (extra) {
+    Object.assign(headers, extra as Record<string, string>);
+  }
+
+  return headers;
+}
+
+type CustomerFetchOptions = RequestInit & {
+  token?: string | null;
+  includeTenant?: boolean;
+};
+
+export function customerFetchInit({
+  token,
+  includeTenant = true,
+  headers,
+  ...init
+}: CustomerFetchOptions = {}): RequestInit {
+  return {
+    credentials: "include",
+    ...init,
+    headers: buildRequestHeaders({
+      token,
+      includeTenant,
+      extra: headers,
+    }),
+  };
+}
 
 type ApiResponse<T> = {
   success: boolean;
@@ -26,16 +99,7 @@ export type { ApiResponse };
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${API_URL}${path.startsWith("/") ? path : `/${path}`}`;
-  const tenantId = process.env.NEXT_PUBLIC_TENANT_ID || "";
-  const res = await fetch(url, {
-    ...init,
-    cache: "no-store",
-    headers: {
-      "Content-Type": "application/json",
-      ...(tenantId ? { "x-tenant-id": tenantId } : {}),
-      ...(init?.headers || {}),
-    },
-  });
+  const res = await fetch(url, customerFetchInit({ ...init, cache: "no-store" }));
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");

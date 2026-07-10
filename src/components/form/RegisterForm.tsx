@@ -2,9 +2,10 @@
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
-import { setCurrentCustomer } from "@/lib/auth";
+import { setCurrentCustomer, COOKIE_SESSION } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { API_URL } from "@/lib/api";
+import { API_URL, customerFetchInit } from "@/lib/api";
+import { formatUserError } from "@/lib/userError";
 
 // Constants
 const ALERT_DURATION = 4000;
@@ -215,21 +216,33 @@ const RegisterForm = () => {
 
       setIsLoading(true);
 
-      try {
-        const res = await fetch(`${API_URL}/customers`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-          },
-          body: JSON.stringify({
-            name: trimmedData.username,
-            email: trimmedData.email,
-            phone: formData.phone.trim(),
-            password: trimmedData.password,
-          }),
-          cache: "no-store",
+      if (!TENANT_ID) {
+        setAlert({
+          type: "danger",
+          message:
+            "Tenant is not configured. Set NEXT_PUBLIC_TENANT_ID in your environment.",
         });
+        toast.error("Application is not configured for this restaurant.", {
+          autoClose: ALERT_DURATION,
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `${API_URL}/customers`,
+          customerFetchInit({
+            method: "POST",
+            body: JSON.stringify({
+              name: trimmedData.username,
+              email: trimmedData.email,
+              phone: formData.phone.trim(),
+              password: trimmedData.password,
+            }),
+            cache: "no-store",
+          }),
+        );
         if (!res.ok) {
           const txt = await res.text().catch(() => "");
           throw new Error(
@@ -238,7 +251,7 @@ const RegisterForm = () => {
         }
         const json = await res.json();
         const customer = json?.data ?? json;
-        setCurrentCustomer(customer);
+        setCurrentCustomer({ ...customer, token: COOKIE_SESSION }, true);
         setAlert({
           type: "success",
           message: "Registration successful! Welcome to our platform.",
@@ -248,15 +261,15 @@ const RegisterForm = () => {
         });
         router.push("/dashboard");
       } catch (error: unknown) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Registration failed. Please try again.";
+        const message = formatUserError(
+          error,
+          "Registration failed. Please try again.",
+        );
         setAlert({
           type: "danger",
           message,
         });
-        toast.error("Something went wrong. Please try again.", {
+        toast.error(message, {
           autoClose: ALERT_DURATION,
         });
       } finally {

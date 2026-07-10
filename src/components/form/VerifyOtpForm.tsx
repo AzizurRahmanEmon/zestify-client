@@ -2,10 +2,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
-import { API_URL } from "@/lib/api";
-import { setCurrentCustomer } from "@/lib/auth";
-
-const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || "";
+import { API_URL, customerFetchInit } from "@/lib/api";
+import { setCurrentCustomer, COOKIE_SESSION } from "@/lib/auth";
+import { formatUserError } from "@/lib/userError";
 
 const ALERT_DURATION = 4000;
 
@@ -93,15 +92,14 @@ const VerifyOtpForm = () => {
 
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_URL}/customers/verify-otp`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-        },
-        body: JSON.stringify({ email, otp: code }),
-        cache: "no-store",
-      });
+      const res = await fetch(
+        `${API_URL}/customers/verify-otp`,
+        customerFetchInit({
+          method: "POST",
+          body: JSON.stringify({ email, otp: code, remember: rememberMe }),
+          cache: "no-store",
+        }),
+      );
 
       const json = await res.json();
       if (!res.ok || !json?.success) {
@@ -109,16 +107,16 @@ const VerifyOtpForm = () => {
       }
 
       const customer = json?.data ?? json;
-      setCurrentCustomer(customer, rememberMe);
+      setCurrentCustomer({ ...customer, token: COOKIE_SESSION }, rememberMe);
       toast.success("Login successful! Welcome back.", {
         autoClose: ALERT_DURATION,
       });
       router.push("/dashboard");
     } catch (error: unknown) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Verification failed. Please try again.";
+      const message = formatUserError(
+        error,
+        "Verification failed. Please try again.",
+      );
       toast.error(message, {
         autoClose: ALERT_DURATION,
       });
@@ -131,15 +129,14 @@ const VerifyOtpForm = () => {
     if (countdown > 0) return;
     setIsResending(true);
     try {
-      const res = await fetch(`${API_URL}/customers/resend-otp`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-        },
-        body: JSON.stringify({ email }),
-        cache: "no-store",
-      });
+      const res = await fetch(
+        `${API_URL}/customers/resend-otp`,
+        customerFetchInit({
+          method: "POST",
+          body: JSON.stringify({ email }),
+          cache: "no-store",
+        }),
+      );
 
       const json = await res.json();
       if (!res.ok || !json?.success) {
@@ -151,8 +148,7 @@ const VerifyOtpForm = () => {
       });
       setCountdown(60);
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Failed to resend code.";
+      const message = formatUserError(error, "Failed to resend code.");
       toast.error(message, {
         autoClose: ALERT_DURATION,
       });

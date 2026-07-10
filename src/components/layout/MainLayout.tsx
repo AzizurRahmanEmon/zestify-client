@@ -6,9 +6,8 @@ import FooterSection from "@/components/footer/FooterSection";
 import { useCustomContext } from "@/context/context";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
-import { API_URL } from "@/lib/api";
-
-const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || "";
+import { API_URL, customerFetchInit } from "@/lib/api";
+import { formatUserError } from "@/lib/userError";
 
 const InstagramSection = dynamic(
   () => import("@/components/social/InstagramSection"),
@@ -108,15 +107,14 @@ const MainLayout = ({ children, header, insta, footer }: Props) => {
               ? `${API_URL}/payments/paypal/cancel`
               : `${API_URL}/payments/stripe/cancel`;
 
-          await fetch(cancelEndpoint, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-            },
-            body: JSON.stringify({ orderId, orderNumber }),
-            cache: "no-store",
-          }).catch(() => null);
+          await fetch(
+            cancelEndpoint,
+            customerFetchInit({
+              method: "POST",
+              body: JSON.stringify({ orderId, orderNumber }),
+              cache: "no-store",
+            }),
+          ).catch(() => null);
           toast.error("Payment was cancelled.");
           return;
         }
@@ -130,12 +128,7 @@ const MainLayout = ({ children, header, insta, footer }: Props) => {
             `${API_URL}/payments/paypal/verify?orderId=${encodeURIComponent(
               orderId,
             )}&orderNumber=${encodeURIComponent(orderNumber)}&token=${encodeURIComponent(paypalToken)}&checkout=${encodeURIComponent(checkout)}`,
-            {
-              cache: "no-store",
-              headers: {
-                ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-              },
-            },
+            customerFetchInit({ cache: "no-store" }),
           );
           const json = await res.json().catch(() => ({}));
           if (!res.ok || json?.success === false) {
@@ -162,12 +155,7 @@ const MainLayout = ({ children, header, insta, footer }: Props) => {
           `${API_URL}/payments/stripe/verify?orderId=${encodeURIComponent(
             orderId,
           )}&orderNumber=${encodeURIComponent(orderNumber)}&session_id=${encodeURIComponent(sessionId)}&checkout=${encodeURIComponent(checkout)}`,
-          {
-            cache: "no-store",
-            headers: {
-              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-            },
-          },
+          customerFetchInit({ cache: "no-store" }),
         );
         const json = await res.json().catch(() => ({}));
         if (!res.ok || json?.success === false) {
@@ -183,9 +171,7 @@ const MainLayout = ({ children, header, insta, footer }: Props) => {
           toast.error("Payment was not completed.");
         }
       } catch (err: unknown) {
-        toast.error(
-          err instanceof Error ? err.message : "Payment verification failed",
-        );
+        toast.error(formatUserError(err, "Payment verification failed"));
       } finally {
         router.replace("/", { scroll: false });
       }

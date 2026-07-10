@@ -1,11 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { API_URL } from "@/lib/api";
+import { API_URL, customerFetchInit } from "@/lib/api";
 import { getCurrentCustomer } from "@/lib/auth";
+import { formatUserError } from "@/lib/userError";
 import { toast } from "react-toastify";
-
-const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || "";
 
 export type ApiComment = {
   _id: string;
@@ -25,6 +24,10 @@ type CurrentCustomer = {
   email?: string;
   token?: string;
 } | null;
+
+function getCustomerToken(): string | undefined {
+  return getCurrentCustomer()?.token;
+}
 
 export const useBlogComments = (blogId: string, refreshKey = 0) => {
   const [comments, setComments] = useState<ApiComment[]>([]);
@@ -96,14 +99,11 @@ export const useBlogComments = (blogId: string, refreshKey = 0) => {
       const url = `${API_URL}/blogs/${encodeURIComponent(
         blogId,
       )}/comments?page=1&limit=50&sort=${encodeURIComponent(sortBy)}`;
-      const token = (getCurrentCustomer() as Record<string, unknown>)?.token;
-      const res = await fetch(url, {
-        cache: "no-store",
-        headers: {
-          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
+      const token = getCustomerToken();
+      const res = await fetch(
+        url,
+        customerFetchInit({ token, cache: "no-store" }),
+      );
       const json = await res.json().catch(() => ({}));
       if (!res.ok || json?.success === false) {
         throw new Error(json?.message || "Failed to load comments");
@@ -122,13 +122,10 @@ export const useBlogComments = (blogId: string, refreshKey = 0) => {
             const replyUrl = `${API_URL}/blogs/${encodeURIComponent(
               blogId,
             )}/comments/${encodeURIComponent(comment._id)}/replies`;
-            const replyRes = await fetch(replyUrl, {
-              cache: "no-store",
-              headers: {
-                ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
-              },
-            });
+            const replyRes = await fetch(
+              replyUrl,
+              customerFetchInit({ token, cache: "no-store" }),
+            );
             const replyJson = await replyRes.json().catch(() => ({}));
             const replies = Array.isArray(replyJson?.data)
               ? (replyJson.data as ApiComment[])
@@ -164,14 +161,11 @@ export const useBlogComments = (blogId: string, refreshKey = 0) => {
       const url = `${API_URL}/blogs/${encodeURIComponent(
         blogId,
       )}/comments/${encodeURIComponent(commentId)}/replies`;
-      const token = (getCurrentCustomer() as Record<string, unknown>)?.token;
-      const res = await fetch(url, {
-        cache: "no-store",
-        headers: {
-          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
+      const token = getCustomerToken();
+      const res = await fetch(
+        url,
+        customerFetchInit({ token, cache: "no-store" }),
+      );
       const json = await res.json().catch(() => ({}));
       if (!res.ok || json?.success === false) {
         throw new Error(json?.message || "Failed to load replies");
@@ -208,19 +202,16 @@ export const useBlogComments = (blogId: string, refreshKey = 0) => {
     async (commentId: string) => {
       if (likedComments.has(commentId)) return;
       try {
-        const token = (getCurrentCustomer() as Record<string, unknown>)?.token;
+        const token = getCustomerToken();
         const res = await fetch(
           `${API_URL}/blogs/${encodeURIComponent(
             blogId,
           )}/comments/${encodeURIComponent(commentId)}/like`,
-          {
+          customerFetchInit({
             method: "PATCH",
+            token,
             cache: "no-store",
-            headers: {
-              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-          },
+          }),
         );
         const json = await res.json().catch(() => ({}));
         if (!res.ok || json?.success === false) {
@@ -274,19 +265,15 @@ export const useBlogComments = (blogId: string, refreshKey = 0) => {
       }
       try {
         setReplySubmitting(true);
-        const token = (getCurrentCustomer() as Record<string, unknown>)?.token;
+        const token = getCustomerToken();
         const res = await fetch(
           `${API_URL}/blogs/${encodeURIComponent(blogId)}/comments`,
-          {
+          customerFetchInit({
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
+            token,
             body: JSON.stringify(payload),
             cache: "no-store",
-          },
+          }),
         );
         const json = await res.json().catch(() => ({}));
         if (!res.ok || json?.success === false) {
@@ -306,9 +293,7 @@ export const useBlogComments = (blogId: string, refreshKey = 0) => {
         setReplyingTo(null);
         toast.success("Reply posted successfully");
       } catch (err: unknown) {
-        const message =
-          err instanceof Error ? err.message : "Failed to post reply";
-        toast.error(message);
+        toast.error(formatUserError(err, "Failed to post reply"));
       } finally {
         setReplySubmitting(false);
       }
@@ -354,21 +339,17 @@ export const useBlogComments = (blogId: string, refreshKey = 0) => {
       }
       try {
         setEditSubmitting(true);
-        const token = (getCurrentCustomer() as Record<string, unknown>)?.token;
+        const token = getCustomerToken();
         const res = await fetch(
           `${API_URL}/blogs/${encodeURIComponent(
             blogId,
           )}/comments/${encodeURIComponent(commentId)}`,
-          {
+          customerFetchInit({
             method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
+            token,
             body: JSON.stringify({ comment: trimmed }),
             cache: "no-store",
-          },
+          }),
         );
         const json = await res.json().catch(() => ({}));
         if (!res.ok || json?.success === false) {
@@ -392,9 +373,7 @@ export const useBlogComments = (blogId: string, refreshKey = 0) => {
         setEditText("");
         toast.success("Comment updated successfully");
       } catch (err: unknown) {
-        const message =
-          err instanceof Error ? err.message : "Failed to update comment";
-        toast.error(message);
+        toast.error(formatUserError(err, "Failed to update comment"));
       } finally {
         setEditSubmitting(false);
       }
@@ -411,19 +390,16 @@ export const useBlogComments = (blogId: string, refreshKey = 0) => {
     if (!commentId) return;
     try {
       setDeleteSubmitting(true);
-      const token = (getCurrentCustomer() as Record<string, unknown>)?.token;
+      const token = getCustomerToken();
       const res = await fetch(
         `${API_URL}/blogs/${encodeURIComponent(
           blogId,
         )}/comments/${encodeURIComponent(commentId)}/owner`,
-        {
+        customerFetchInit({
           method: "DELETE",
-          headers: {
-            ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
+          token,
           cache: "no-store",
-        },
+        }),
       );
       const json = await res.json().catch(() => ({}));
       if (!res.ok || json?.success === false) {
@@ -445,9 +421,7 @@ export const useBlogComments = (blogId: string, refreshKey = 0) => {
       setDeleteConfirmId(null);
       toast.success("Comment deleted successfully");
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to delete comment";
-      toast.error(message);
+      toast.error(formatUserError(err, "Failed to delete comment"));
     } finally {
       setDeleteSubmitting(false);
     }

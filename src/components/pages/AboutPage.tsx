@@ -28,7 +28,7 @@ const AboutPage = async () => {
       <BreadcrumbSection title="About Us" />
       <AboutSection variant />
       <AboutServiceSection />
-      <VideoSection bgImg="/assets/img/about-video.png" />
+      <VideoSection bgImg="/assets/img/about-video-bg.png" />
       <TeamSection members={chefs} />
       <CompanySection
         partners={partners.map((p: Partner) => ({

@@ -3,7 +3,9 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { API_URL } from "@/lib/api";
+import { API_URL, customerFetchInit } from "@/lib/api";
+import { formatUserError } from "@/lib/userError";
+import { SHOW_DEV_OTP } from "@/lib/dev";
 
 // Constants
 const ALERT_DURATION = 4000;
@@ -61,14 +63,13 @@ const ForgotPasswordForm = () => {
     setAlert(null);
 
     try {
-      const res = await fetch(`${API_URL}/customers/forgot-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-        },
-        body: JSON.stringify({ email: email.trim() }),
-      });
+      const res = await fetch(
+        `${API_URL}/customers/forgot-password`,
+        customerFetchInit({
+          method: "POST",
+          body: JSON.stringify({ email: email.trim() }),
+        }),
+      );
 
       const json = (await res.json()) as {
         success?: boolean;
@@ -77,7 +78,7 @@ const ForgotPasswordForm = () => {
       };
       if (!res.ok) throw new Error(json.message || "Failed to send OTP");
 
-      if (json.data?.otp) {
+      if (SHOW_DEV_OTP && json.data?.otp) {
         setDevOtpHint(json.data.otp);
         setOtp(json.data.otp);
         toast.info(`Development OTP: ${json.data.otp}`);
@@ -90,8 +91,7 @@ const ForgotPasswordForm = () => {
       );
       setStep(2);
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Failed to process request";
+      const message = formatUserError(error, "Failed to process request");
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -121,18 +121,17 @@ const ForgotPasswordForm = () => {
     setAlert(null);
 
     try {
-      const res = await fetch(`${API_URL}/customers/reset-password`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-        },
-        body: JSON.stringify({
-          email: email.trim(),
-          otp: otp.trim(),
-          password,
+      const res = await fetch(
+        `${API_URL}/customers/reset-password`,
+        customerFetchInit({
+          method: "PUT",
+          body: JSON.stringify({
+            email: email.trim(),
+            otp: otp.trim(),
+            password,
+          }),
         }),
-      });
+      );
 
       const json = await res.json();
       if (!res.ok) throw new Error(json.message || "Failed to reset password");
@@ -140,8 +139,7 @@ const ForgotPasswordForm = () => {
       toast.success("Password reset successful! Please login.");
       router.push("/login");
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Failed to reset password";
+      const message = formatUserError(error, "Failed to reset password");
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -226,7 +224,7 @@ const ForgotPasswordForm = () => {
           Reset Password
         </h2>
         <p className="text-gray-600">Verification code sent to {email}</p>
-        {devOtpHint && (
+        {SHOW_DEV_OTP && devOtpHint && (
           <p className="mt-2 text-sm text-amber-700">
             Development OTP: <strong>{devOtpHint}</strong>
           </p>

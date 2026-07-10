@@ -2,8 +2,9 @@
 import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import { API_URL } from "@/lib/api";
+import { API_URL, customerFetchInit } from "@/lib/api";
 import { getCurrentCustomer } from "@/lib/auth";
+import { formatUserError } from "@/lib/userError";
 
 const ALERT_DURATION = 4000;
 const DEFAULT_SUBMISSION_DELAY = 0;
@@ -141,10 +142,10 @@ export const useReservationForm = ({
       phone: customer.phone || prev.phone,
     }));
 
-    fetch(`${API_URL}/customers/me`, {
-      headers: { Authorization: `Bearer ${customer.token}` },
-      cache: "no-store",
-    })
+    fetch(
+      `${API_URL}/customers/me`,
+      customerFetchInit({ token: customer.token, cache: "no-store" }),
+    )
       .then((r) => r.json())
       .then((json) => {
         const data = json?.data ?? {};
@@ -196,12 +197,7 @@ export const useReservationForm = ({
           `${API_URL}/reservations/check/available-slots?date=${encodeURIComponent(
             dateStr,
           )}`,
-          {
-            cache: "no-store",
-            headers: {
-              ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-            },
-          },
+          customerFetchInit({ cache: "no-store" }),
         );
 
         const json = await res.json().catch(() => null);
@@ -354,23 +350,22 @@ export const useReservationForm = ({
 
     setIsSubmitting(true);
     try {
-      const res = await fetch(`${API_URL}/reservations`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-          Authorization: `Bearer ${customer.token}`,
-        },
-        body: JSON.stringify({
-          name: trimmedData.name,
-          email: trimmedData.email,
-          phone: trimmedData.phone,
-          date: trimmedData.date,
-          time: trimmedData.time,
-          numberOfGuests: parsedGuests,
-          [messagePayloadKey]: trimmedData.message,
+      const res = await fetch(
+        `${API_URL}/reservations`,
+        customerFetchInit({
+          method: "POST",
+          token: customer.token,
+          body: JSON.stringify({
+            name: trimmedData.name,
+            email: trimmedData.email,
+            phone: trimmedData.phone,
+            date: trimmedData.date,
+            time: trimmedData.time,
+            numberOfGuests: parsedGuests,
+            [messagePayloadKey]: trimmedData.message,
+          }),
         }),
-      });
+      );
 
       const json = await res.json().catch(() => ({}));
       if (
@@ -399,10 +394,7 @@ export const useReservationForm = ({
     } catch (error: unknown) {
       setAlert({
         type: "danger",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to submit reservation",
+        message: formatUserError(error, "Failed to submit reservation"),
       });
     } finally {
       setIsSubmitting(false);

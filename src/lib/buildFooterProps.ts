@@ -19,8 +19,9 @@ export function buildFooterProps(
   cmsFooter: FooterCmsProps,
   settings: Settings | null | undefined,
 ): FooterCmsProps {
-  const businessHours = Array.isArray(settings?.businessHours)
-    ? settings.businessHours
+  const rawBusinessHours = settings?.businessHours;
+  const businessHours = Array.isArray(rawBusinessHours)
+    ? rawBusinessHours
     : [];
 
   const openHoursText =

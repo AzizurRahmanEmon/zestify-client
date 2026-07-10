@@ -1,4 +1,4 @@
-import { request, API_URL } from "@/lib/api";
+import { request, API_URL, customerFetchInit } from "@/lib/api";
 
 export type BlogAuthor = {
   _id?: string;
@@ -94,14 +94,7 @@ async function fetchJson<T>(path: string): Promise<T> {
 
 async function fetchRawJson<T>(path: string): Promise<T> {
   const url = `${API_URL}${path.startsWith("/") ? path : `/${path}`}`;
-  const tenantId = process.env.NEXT_PUBLIC_TENANT_ID || "";
-  const res = await fetch(url, {
-    cache: "no-store",
-    headers: {
-      "Content-Type": "application/json",
-      ...(tenantId ? { "x-tenant-id": tenantId } : {}),
-    },
-  });
+  const res = await fetch(url, customerFetchInit({ cache: "no-store" }));
   if (!res.ok) {
     throw new Error(`Request failed (${res.status}) for ${url}`);
   }

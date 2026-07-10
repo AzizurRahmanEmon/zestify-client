@@ -2,8 +2,9 @@
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
-import { setCurrentCustomer, clearCurrentCustomer } from "@/lib/auth";
-import { API_URL } from "@/lib/api";
+import { setCurrentCustomer, clearCurrentCustomer, COOKIE_SESSION } from "@/lib/auth";
+import { API_URL, customerFetchInit } from "@/lib/api";
+import { formatUserError } from "@/lib/userError";
 
 // Constants
 const ALERT_DURATION = 4000;
@@ -121,19 +122,32 @@ const LoginForm = () => {
 
       setIsLoading(true);
 
-      try {
-        const res = await fetch(`${API_URL}/customers/login`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(TENANT_ID ? { "x-tenant-id": TENANT_ID } : {}),
-          },
-          body: JSON.stringify({
-            email: trimmedData.email,
-            password: trimmedData.password,
-          }),
-          cache: "no-store",
+      if (!TENANT_ID) {
+        setAlert({
+          type: "danger",
+          message:
+            "Tenant is not configured. Set NEXT_PUBLIC_TENANT_ID in your environment.",
         });
+        toast.error("Application is not configured for this restaurant.", {
+          autoClose: ALERT_DURATION,
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `${API_URL}/customers/login`,
+          customerFetchInit({
+            method: "POST",
+            body: JSON.stringify({
+              email: trimmedData.email,
+              password: trimmedData.password,
+              remember: trimmedData.rememberMe,
+            }),
+            cache: "no-store",
+          }),
+        );
         if (!res.ok) {
           const txt = await res.text().catch(() => "");
           throw new Error(
@@ -148,7 +162,10 @@ const LoginForm = () => {
           if (process.env.NEXT_PUBLIC_OTP_REQUIRED === "false") {
             const customer = json?.data ?? json;
             clearCurrentCustomer();
-            setCurrentCustomer(customer, trimmedData.rememberMe);
+            setCurrentCustomer(
+              { ...customer, token: COOKIE_SESSION },
+              trimmedData.rememberMe,
+            );
             toast.success("Login successful! Welcome back.", {
               autoClose: ALERT_DURATION,
             });
@@ -166,21 +183,24 @@ const LoginForm = () => {
         // Direct login (OTP disabled or already verified)
         const customer = json?.data ?? json;
         clearCurrentCustomer();
-        setCurrentCustomer(customer, trimmedData.rememberMe);
+        setCurrentCustomer(
+          { ...customer, token: COOKIE_SESSION },
+          trimmedData.rememberMe,
+        );
         toast.success("Login successful! Welcome back.", {
           autoClose: ALERT_DURATION,
         });
         window.location.replace("/dashboard");
       } catch (error: unknown) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Invalid credentials. Please try again.";
+        const message = formatUserError(
+          error,
+          "Invalid credentials. Please try again.",
+        );
         setAlert({
           type: "danger",
           message,
         });
-        toast.error("Invalid credentials. Please try again.", {
+        toast.error(message, {
           autoClose: ALERT_DURATION,
         });
       } finally {

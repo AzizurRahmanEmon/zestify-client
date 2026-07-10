@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
 import Image from "next/image";
 import { API_URL } from "@/lib/api";
+import { formatUserError } from "@/lib/userError";
 
 const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || "";
 
@@ -234,8 +235,7 @@ const ContactForm = () => {
           message: "",
         });
       } catch (err: unknown) {
-        const message =
-          err instanceof Error ? err.message : "Failed to send message";
+        const message = formatUserError(err, "Failed to send message");
         setAlert({
           type: "danger",
           message,
