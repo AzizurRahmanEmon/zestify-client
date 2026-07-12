@@ -2,7 +2,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { API_URL, customerFetchInit } from "@/lib/api";
+import {
+  API_URL,
+  customerFetchInit,
+  rememberCsrfFromAuthPayload,
+} from "@/lib/api";
 import { useCustomContext } from "@/context/context";
 import { getCurrentCustomer } from "@/lib/auth";
 import { formatUserError } from "@/lib/userError";
@@ -132,6 +136,7 @@ export const useCheckoutForm = () => {
     )
       .then((res) => res.json())
       .then((json) => {
+        rememberCsrfFromAuthPayload(json);
         if (json.success && json.data.savedAddresses) {
           setCustomerAddresses(json.data.savedAddresses);
           setAvailableLoyaltyPoints(Number(json.data.loyaltyPoints || 0));

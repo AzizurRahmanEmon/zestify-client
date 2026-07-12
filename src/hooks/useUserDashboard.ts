@@ -9,7 +9,11 @@ import {
   getCurrentCustomer,
   setCurrentCustomer,
 } from "@/lib/auth";
-import { API_URL, customerFetchInit } from "@/lib/api";
+import {
+  API_URL,
+  customerFetchInit,
+  rememberCsrfFromAuthPayload,
+} from "@/lib/api";
 import { formatUserError } from "@/lib/userError";
 import {
   DashboardAddress,
@@ -173,7 +177,9 @@ const useUserDashboard = () => {
           data: Partial<DashboardCustomer> & {
             savedAddresses?: DashboardAddress[];
           };
+          csrfToken?: string;
         };
+        rememberCsrfFromAuthPayload(profileJson);
         const updatedCustomer = { ...currentCustomer, ...profileJson.data };
         setCustomer(updatedCustomer);
         setAddresses(profileJson.data.savedAddresses || []);

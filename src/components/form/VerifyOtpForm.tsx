@@ -2,7 +2,11 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
-import { API_URL, customerFetchInit } from "@/lib/api";
+import {
+  API_URL,
+  customerFetchInit,
+  rememberCsrfFromAuthPayload,
+} from "@/lib/api";
 import { setCurrentCustomer, COOKIE_SESSION } from "@/lib/auth";
 import { formatUserError } from "@/lib/userError";
 
@@ -107,6 +111,7 @@ const VerifyOtpForm = () => {
       }
 
       const customer = json?.data ?? json;
+      rememberCsrfFromAuthPayload(json);
       setCurrentCustomer({ ...customer, token: COOKIE_SESSION }, rememberMe);
       toast.success("Login successful! Welcome back.", {
         autoClose: ALERT_DURATION,

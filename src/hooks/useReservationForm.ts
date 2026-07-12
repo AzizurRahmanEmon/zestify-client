@@ -2,7 +2,11 @@
 import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import { API_URL, customerFetchInit } from "@/lib/api";
+import {
+  API_URL,
+  customerFetchInit,
+  rememberCsrfFromAuthPayload,
+} from "@/lib/api";
 import { getCurrentCustomer } from "@/lib/auth";
 import { formatUserError } from "@/lib/userError";
 
@@ -148,6 +152,7 @@ export const useReservationForm = ({
     )
       .then((r) => r.json())
       .then((json) => {
+        rememberCsrfFromAuthPayload(json);
         const data = json?.data ?? {};
         setFormData((prev) => ({
           ...prev,

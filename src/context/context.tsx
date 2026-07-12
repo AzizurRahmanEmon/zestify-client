@@ -8,7 +8,11 @@ import React, {
 } from "react";
 import type { ProductDataType } from "@/types";
 import { toast } from "react-toastify";
-import { API_URL, customerFetchInit } from "@/lib/api";
+import {
+  API_URL,
+  customerFetchInit,
+  rememberCsrfFromAuthPayload,
+} from "@/lib/api";
 import { getCurrentCustomer } from "@/lib/auth";
 
 interface ContextData {
@@ -250,6 +254,7 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({
         }
 
         const json = await res.json();
+        rememberCsrfFromAuthPayload(json);
         const data = json?.data ?? {};
 
         if (!cancelled) {

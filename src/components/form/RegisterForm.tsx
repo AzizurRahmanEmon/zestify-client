@@ -4,7 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
 import { setCurrentCustomer, COOKIE_SESSION } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { API_URL, customerFetchInit } from "@/lib/api";
+import {
+  API_URL,
+  customerFetchInit,
+  rememberCsrfFromAuthPayload,
+} from "@/lib/api";
 import { formatUserError } from "@/lib/userError";
 
 // Constants
@@ -251,6 +255,7 @@ const RegisterForm = () => {
         }
         const json = await res.json();
         const customer = json?.data ?? json;
+        rememberCsrfFromAuthPayload(json);
         setCurrentCustomer({ ...customer, token: COOKIE_SESSION }, true);
         setAlert({
           type: "success",

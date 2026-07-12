@@ -1,4 +1,9 @@
-import { API_URL, COOKIE_SESSION, customerFetchInit } from "@/lib/api";
+import {
+  API_URL,
+  COOKIE_SESSION,
+  clearCsrfToken,
+  customerFetchInit,
+} from "@/lib/api";
 
 type CustomerLike = {
   _id?: string;
@@ -69,6 +74,7 @@ export function clearCurrentCustomer() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(KEY);
   sessionStorage.removeItem(KEY);
+  clearCsrfToken();
   window.dispatchEvent(new Event("auth:changed"));
 }
 
@@ -78,6 +84,7 @@ export function clearCustomerSession() {
   sessionStorage.removeItem(KEY);
   localStorage.removeItem(CART_STORAGE_KEY);
   localStorage.removeItem(WISHLIST_STORAGE_KEY);
+  clearCsrfToken();
   window.dispatchEvent(new Event("auth:changed"));
   window.dispatchEvent(new Event("session:cleared"));
 

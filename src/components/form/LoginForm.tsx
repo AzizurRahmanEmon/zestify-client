@@ -2,8 +2,13 @@
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
-import { setCurrentCustomer, clearCurrentCustomer, COOKIE_SESSION } from "@/lib/auth";
-import { API_URL, customerFetchInit } from "@/lib/api";
+import {
+  API_URL,
+  COOKIE_SESSION,
+  customerFetchInit,
+  rememberCsrfFromAuthPayload,
+} from "@/lib/api";
+import { setCurrentCustomer, clearCurrentCustomer } from "@/lib/auth";
 import { formatUserError } from "@/lib/userError";
 
 // Constants
@@ -162,6 +167,7 @@ const LoginForm = () => {
           if (process.env.NEXT_PUBLIC_OTP_REQUIRED === "false") {
             const customer = json?.data ?? json;
             clearCurrentCustomer();
+            rememberCsrfFromAuthPayload(json);
             setCurrentCustomer(
               { ...customer, token: COOKIE_SESSION },
               trimmedData.rememberMe,
@@ -183,6 +189,7 @@ const LoginForm = () => {
         // Direct login (OTP disabled or already verified)
         const customer = json?.data ?? json;
         clearCurrentCustomer();
+        rememberCsrfFromAuthPayload(json);
         setCurrentCustomer(
           { ...customer, token: COOKIE_SESSION },
           trimmedData.rememberMe,

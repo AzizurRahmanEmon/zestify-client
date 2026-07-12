@@ -16,11 +16,53 @@ export const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID?.trim() || "";
 /** Sentinel for httpOnly cookie sessions — never send as a Bearer token. */
 export const COOKIE_SESSION = "cookie";
 
+const CSRF_STORAGE_KEY = "zestify_customer_csrf_token";
+
 export function isCookieSession(token?: string | null): boolean {
   return token === COOKIE_SESSION;
 }
 
+/** Persist CSRF from login/me JSON — required for cross-origin (cookie is not JS-readable). */
+export function persistCsrfToken(token: string | null | undefined): void {
+  if (typeof sessionStorage === "undefined") return;
+  if (!token) {
+    sessionStorage.removeItem(CSRF_STORAGE_KEY);
+    return;
+  }
+  sessionStorage.setItem(CSRF_STORAGE_KEY, token);
+}
+
+export function clearCsrfToken(): void {
+  if (typeof sessionStorage === "undefined") return;
+  sessionStorage.removeItem(CSRF_STORAGE_KEY);
+}
+
+export function rememberCsrfFromAuthPayload(
+  payload?: {
+    csrfToken?: string;
+    data?: unknown;
+  } | null,
+): void {
+  const data = payload?.data;
+  const nestedToken =
+    data &&
+    typeof data === "object" &&
+    data !== null &&
+    "csrfToken" in data &&
+    typeof (data as { csrfToken?: unknown }).csrfToken === "string"
+      ? (data as { csrfToken: string }).csrfToken
+      : undefined;
+  const token = payload?.csrfToken ?? nestedToken;
+  if (token) {
+    persistCsrfToken(token);
+  }
+}
+
 export function getCsrfTokenFromCookie(): string | null {
+  if (typeof sessionStorage !== "undefined") {
+    const stored = sessionStorage.getItem(CSRF_STORAGE_KEY);
+    if (stored) return stored;
+  }
   if (typeof document === "undefined") return null;
   const match = document.cookie.match(
     /(?:^|;\s*)zestify_customer_csrf=([^;]+)/,
@@ -99,7 +141,10 @@ export type { ApiResponse };
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${API_URL}${path.startsWith("/") ? path : `/${path}`}`;
-  const res = await fetch(url, customerFetchInit({ ...init, cache: "no-store" }));
+  const res = await fetch(
+    url,
+    customerFetchInit({ ...init, cache: "no-store" }),
+  );
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
