@@ -13,7 +13,6 @@ import { formatUserError } from "@/lib/userError";
 const ALERT_DURATION = 4000;
 const DEFAULT_SUBMISSION_DELAY = 0;
 const DEFAULT_MESSAGE_KEY = "message";
-const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || "";
 
 type ReservationAlertState = {
   type: "success" | "danger";
