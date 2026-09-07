@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import {
   API_URL,
   customerFetchInit,
+  fetchWithRetry,
   rememberCsrfFromAuthPayload,
 } from "@/lib/api";
 import { useCustomContext } from "@/context/context";
@@ -652,7 +653,7 @@ export const useCheckoutForm = () => {
         const gatewayLabel =
           trimmedData.payment === "paypal" ? "PayPal" : "Stripe";
 
-        const res = await fetch(
+        const res = await fetchWithRetry(
           `${API_URL}/payments/${paymentPath}`,
           customerFetchInit({
             method: "POST",

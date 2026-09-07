@@ -73,6 +73,10 @@ export function formatUserError(
 
   if (!raw.trim()) return fallback;
 
+  if (/failed to fetch|networkerror|load failed/i.test(raw)) {
+    return "Could not reach the payment server. If this is your first checkout in a while, wait a moment and try again.";
+  }
+
   if (SHOW_DETAILED_API_ERRORS) return raw;
 
   const apiMessage = extractApiMessage(raw);

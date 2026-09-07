@@ -127,6 +127,34 @@ export function customerFetchInit({
   };
 }
 
+function isTransientFetchError(error: unknown): boolean {
+  if (!(error instanceof TypeError)) return false;
+  const message = error.message.toLowerCase();
+  return (
+    message.includes("failed to fetch") ||
+    message.includes("networkerror") ||
+    message.includes("load failed")
+  );
+}
+
+/** Retry once on transient network failures (e.g. Render cold start). */
+export async function fetchWithRetry(
+  url: string,
+  init: RequestInit,
+  retries = 1,
+  delayMs = 2500,
+): Promise<Response> {
+  try {
+    return await fetch(url, init);
+  } catch (error) {
+    if (retries <= 0 || !isTransientFetchError(error)) {
+      throw error;
+    }
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+    return fetchWithRetry(url, init, retries - 1, delayMs);
+  }
+}
+
 type ApiResponse<T> = {
   success: boolean;
   message?: string;
