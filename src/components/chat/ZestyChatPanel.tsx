@@ -51,7 +51,7 @@ const ZestyChatPanel = ({
 
       <div
         ref={scrollRef}
-        className="flex min-h-[20rem] flex-1 flex-col gap-4 overflow-y-auto bg-gray-50/70 p-4 sm:p-6"
+        className="flex min-h-80 flex-1 flex-col gap-4 overflow-y-auto bg-gray-50/70 p-4 sm:p-6"
         aria-live="polite"
         aria-relevant="additions"
       >

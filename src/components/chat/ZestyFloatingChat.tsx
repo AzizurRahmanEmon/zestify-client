@@ -19,21 +19,15 @@ const ZestyFloatingChat = () => {
   const isConfigured = useMemo(() => isZestyChatConfigured(), []);
   const isLoggedIn = useCustomerLoggedIn();
 
-  const {
-    messages,
-    input,
-    setInput,
-    isSending,
-    scrollRef,
-    handleSubmit,
-  } = useZestyChat({ enableSessionList: false });
+  const { messages, input, setInput, isSending, scrollRef, handleSubmit } =
+    useZestyChat({ enableSessionList: false });
 
   if (!isConfigured || pathname === "/chat") {
     return null;
   }
 
   return (
-    <div className="fixed bottom-5 right-5 z-[999] flex flex-col items-end gap-3">
+    <div className="fixed bottom-5 right-5 z-999 flex flex-col items-end gap-3">
       {open && (
         <div
           className="flex w-[min(100vw-2rem,24rem)] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl"
