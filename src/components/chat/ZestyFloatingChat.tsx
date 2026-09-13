@@ -92,7 +92,7 @@ const ZestyFloatingChat = () => {
                   className={`flex ${isUser ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[88%] rounded-2xl px-3 py-2 text-sm shadow-sm ${
+                    className={`min-w-0 max-w-[88%] overflow-hidden rounded-2xl px-3 py-2 text-sm shadow-sm ${
                       isUser
                         ? "rounded-br-md bg-zPink text-white"
                         : "rounded-bl-md border border-gray-100 bg-white text-gray-900"
@@ -103,11 +103,13 @@ const ZestyFloatingChat = () => {
                         Zesty
                       </p>
                     )}
-                    <p className="whitespace-pre-wrap leading-relaxed">
+                    <p className="break-words whitespace-pre-wrap leading-relaxed">
                       {message.content}
                     </p>
                     {!isUser && message.uiCard && (
-                      <ZestyUiCardRenderer uiCard={message.uiCard} />
+                      <div className="min-w-0 max-w-full">
+                        <ZestyUiCardRenderer uiCard={message.uiCard} />
+                      </div>
                     )}
                   </div>
                 </div>
