@@ -42,7 +42,7 @@ const ReservationConfirmationCard = ({
 
   return (
     <div
-      className="mt-3 rounded-2xl border border-green-200 bg-green-50 p-4 shadow-sm"
+      className="mt-3 max-w-full overflow-hidden rounded-2xl border border-green-200 bg-green-50 p-4 shadow-sm"
       role="status"
       aria-live="polite"
     >
@@ -71,21 +71,23 @@ const ReservationConfirmationCard = ({
           </p>
 
           <dl className="mt-4 grid gap-2 text-sm text-green-900">
-            <div className="flex justify-between gap-4">
+            <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-4 gap-y-0.5">
               <dt className="font-medium text-green-800">Date</dt>
-              <dd className="text-right">{formatReservationDate(date)}</dd>
+              <dd className="min-w-0 break-words text-right">
+                {formatReservationDate(date)}
+              </dd>
             </div>
-            <div className="flex justify-between gap-4">
+            <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-4 gap-y-0.5">
               <dt className="font-medium text-green-800">Time</dt>
-              <dd className="text-right">{formatTime(time)}</dd>
+              <dd className="min-w-0 text-right">{formatTime(time)}</dd>
             </div>
-            <div className="flex justify-between gap-4">
+            <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-4 gap-y-0.5">
               <dt className="font-medium text-green-800">Party size</dt>
-              <dd className="text-right">{guestLabel}</dd>
+              <dd className="min-w-0 text-right">{guestLabel}</dd>
             </div>
-            <div className="flex justify-between gap-4 border-t border-green-200 pt-2">
+            <div className="border-t border-green-200 pt-2">
               <dt className="font-medium text-green-800">Confirmation</dt>
-              <dd className="truncate text-right font-mono text-xs">
+              <dd className="mt-1 min-w-0 break-all font-mono text-xs leading-relaxed text-green-900">
                 {reservationId}
               </dd>
             </div>
