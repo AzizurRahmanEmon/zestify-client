@@ -1,6 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import ZestyUiCardRenderer from "@/components/chat/ZestyUiCardRenderer";
+import { useCustomerLoggedIn } from "@/hooks/useCustomerLoggedIn";
+import {
+  ZESTY_LOGGED_IN_EMPTY_HINT,
+  ZESTY_LOGGED_IN_PLACEHOLDER,
+  ZESTY_LOGGED_OUT_PLACEHOLDER,
+} from "@/lib/zestyChatUi";
 import type { ZestyChatMessage } from "@/types/zestyChat";
 
 interface ZestyChatPanelProps {
@@ -26,6 +33,8 @@ const ZestyChatPanel = ({
   handleSubmit,
   onOpenSidebar,
 }: ZestyChatPanelProps) => {
+  const isLoggedIn = useCustomerLoggedIn();
+
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-white">
       <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 lg:hidden">
@@ -53,8 +62,19 @@ const ZestyChatPanel = ({
         ) : messages.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 text-center">
             <p className="text-sm text-gray-500">
-              Try &ldquo;What vegan options do you have under $15?&rdquo; or
-              &ldquo;Book a table for 4 this Friday.&rdquo;
+              {isLoggedIn ? (
+                ZESTY_LOGGED_IN_EMPTY_HINT
+              ) : (
+                <>
+                  Log in to ask about the menu or book a table.{" "}
+                  <Link
+                    href="/login"
+                    className="font-medium text-zPink underline-offset-2 hover:underline"
+                  >
+                    Log in
+                  </Link>
+                </>
+              )}
             </p>
           </div>
         ) : (
@@ -112,10 +132,19 @@ const ZestyChatPanel = ({
           </label>
           <input
             id="zesty-chat-input"
+            name="zesty-chat-message"
             type="text"
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="Ask about the menu or make a reservation…"
+            placeholder={
+              isLoggedIn
+                ? ZESTY_LOGGED_IN_PLACEHOLDER
+                : ZESTY_LOGGED_OUT_PLACEHOLDER
+            }
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
             disabled={!isConfigured || isSending || isLoadingSession}
             maxLength={2000}
             className="min-w-0 flex-1 rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-zPink focus:outline-none focus:ring-2 focus:ring-zPink/20 disabled:cursor-not-allowed disabled:opacity-60"

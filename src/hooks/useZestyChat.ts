@@ -10,6 +10,8 @@ import {
 } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
+import { getCsrfTokenFromCookie, isCookieSession } from "@/lib/api";
+import { getCurrentCustomer } from "@/lib/auth";
 import { formatDate } from "@/lib/date";
 import { buildZestyBookingIntentMessage } from "@/lib/zestyDeepLink";
 import { getOrCreateZestySessionId } from "@/lib/zestySession";
@@ -28,6 +30,19 @@ import type {
 } from "@/types/zestyChat";
 
 const ALERT_DURATION = 4000;
+const ZESTY_LOGIN_REQUIRED = "Please log in to chat with Zesty.";
+const ZESTY_SESSION_EXPIRED = "Please log in again to chat with Zesty.";
+
+function assertZestyChatAuth(): string | null {
+  const customer = getCurrentCustomer();
+  if (!customer) {
+    return ZESTY_LOGIN_REQUIRED;
+  }
+  if (isCookieSession(customer.token) && !getCsrfTokenFromCookie()) {
+    return ZESTY_SESSION_EXPIRED;
+  }
+  return null;
+}
 
 function createMessageId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -85,7 +100,12 @@ export function useZestyChat(options?: { enableSessionList?: boolean }) {
   }, []);
 
   const refreshSessions = useCallback(async () => {
-    if (!enableSessionList || !guestSessionId || !isConfigured) {
+    if (
+      !enableSessionList ||
+      !guestSessionId ||
+      !isConfigured ||
+      !getCurrentCustomer()
+    ) {
       return;
     }
 
@@ -186,6 +206,12 @@ export function useZestyChat(options?: { enableSessionList?: boolean }) {
         return;
       }
 
+      const authError = assertZestyChatAuth();
+      if (authError) {
+        toast.error(authError, { autoClose: ALERT_DURATION });
+        return;
+      }
+
       const userMessage: ZestyChatMessage = {
         id: createMessageId(),
         role: "user",
@@ -255,9 +281,16 @@ export function useZestyChat(options?: { enableSessionList?: boolean }) {
         }
       } catch (error) {
         setMessages((prev) => prev.filter((message) => message.id !== userMessage.id));
-        toast.error(formatUserError(error, "Zesty couldn't respond right now."), {
-          autoClose: ALERT_DURATION,
-        });
+        const raw =
+          error instanceof Error
+            ? error.message
+            : typeof error === "string"
+              ? error
+              : "";
+        const message = /csrf/i.test(raw)
+          ? ZESTY_LOGIN_REQUIRED
+          : formatUserError(error, "Zesty couldn't respond right now. Try again.");
+        toast.error(message, { autoClose: ALERT_DURATION });
       } finally {
         setIsSending(false);
       }

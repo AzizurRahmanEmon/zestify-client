@@ -4,13 +4,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import ZestyUiCardRenderer from "@/components/chat/ZestyUiCardRenderer";
+import { useCustomerLoggedIn } from "@/hooks/useCustomerLoggedIn";
 import { useZestyChat } from "@/hooks/useZestyChat";
+import {
+  ZESTY_LOGGED_IN_EMPTY_HINT,
+  ZESTY_LOGGED_IN_PLACEHOLDER,
+  ZESTY_LOGGED_OUT_PLACEHOLDER,
+} from "@/lib/zestyChatUi";
 import { isZestyChatConfigured } from "@/services/zestyChat";
 
 const ZestyFloatingChat = () => {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const isConfigured = useMemo(() => isZestyChatConfigured(), []);
+  const isLoggedIn = useCustomerLoggedIn();
 
   const {
     messages,
@@ -66,7 +73,20 @@ const ZestyFloatingChat = () => {
           >
             {messages.length === 0 && (
               <p className="px-2 py-6 text-center text-sm text-gray-500">
-                Ask about the menu, dietary options, or book a table.
+                {isLoggedIn ? (
+                  ZESTY_LOGGED_IN_EMPTY_HINT
+                ) : (
+                  <>
+                    Log in to ask about the menu, dietary options, or book a
+                    table.{" "}
+                    <Link
+                      href="/login"
+                      className="font-medium text-zPink underline-offset-2 hover:underline"
+                    >
+                      Log in
+                    </Link>
+                  </>
+                )}
               </p>
             )}
 
@@ -119,10 +139,19 @@ const ZestyFloatingChat = () => {
               </label>
               <input
                 id="zesty-floating-chat-input"
+                name="zesty-chat-message"
                 type="text"
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
-                placeholder="Ask Zesty…"
+                placeholder={
+                  isLoggedIn
+                    ? ZESTY_LOGGED_IN_PLACEHOLDER
+                    : ZESTY_LOGGED_OUT_PLACEHOLDER
+                }
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
                 disabled={isSending}
                 maxLength={2000}
                 className="min-w-0 flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-zPink focus:outline-none focus:ring-2 focus:ring-zPink/20 disabled:opacity-60"
